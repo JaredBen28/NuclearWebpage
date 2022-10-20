@@ -9,33 +9,21 @@
     <header class="container-fluid text-center">
         <h1>Metrics!</h1>
     </header>
-    <div class="container-fluid text-center">    
+    <div class="container-fluid text-center" id="clicker">    
       <div class="row content">
         <div class="col-lg-1">
             <p><a href="./index.html">Welcome</a></p>
             <p><a href="./metric.html">Metrics</a></p>
             <p><a href="./control.html">Controls</a></p>
         </div>
-        <div class="col-lg-3">
-          <div class="reactor-temp"></div>
-          <div><p>Core Temperature</p></div>
-        </div>
-        <div class="col-lg-3">
-          <div class="coolent-temp"></div>
-          <div><p>Coolent Temperature</p></div>
-        </div>
-        <div class="col-lg-3">
-          <div class="row">
-            <canvas class="power-out" width="286.5" height="250"></canvas>
-            <div><p id="metrics">Power Output</p></div>
-          <div class="row">
-            <canvas class="demo"></canvas>
-          </div>
-          </div>
+        <div class="col-lg-10">
+          <div class="row"><canvas id="core"></canvas></div>
+          <div class="row"><canvas id="coolent"></canvas></div>
+          <div class="row"><canvas id="power"></canvas></div>
         </div>
       </div>
     </div>
-    
+
     <footer class="container-fluid text-center">
       <p>Cyber Physical Systems Project</p>
     </footer>
@@ -53,7 +41,6 @@
 
   <link href="./styles.css" rel="stylesheet">
   <script type="text/javascript" src="./jquery/jquery-3.6.1.js"></script>
-  <script type="text/javascript" src="./jquery/jquery.tempgauge.js"></script>
-  <script type="text/javascript" src="./jquery/jquery.gauge.js"></script>
+  <script type="text/javascript" src="./js_packages/gauge.min.js"></script>
   <script type="text/javascript" src="./main.js"></script>
 </html>
