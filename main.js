@@ -1,8 +1,7 @@
-var powerGauge;
-var coolentGauge;
-var coreGauge;
-var transitions = false;
-var timeout, clicker = $('#clicker');
+var powerGauge, coolentGauge, coreGauge;
+var clockInterval;
+var clockID = $('#clock');
+var clockState = false;
 
 
 $(function() {
@@ -10,16 +9,30 @@ $(function() {
   renderGauges();
 });
 
-function createGauges() {
-  var containerWidth = document.getElementsByClassName("col-lg-10").clientWidth;
-  var containerHeight = 200;
+$(clockID).click(function(){
+  if (!clockState) {
+    console.log("Clock Start");
+    clockInterval = setInterval("randomUpdates()", 1000);
+    clockState = true;
+  } else {
+    console.log("Clock Stop")
+    clearInterval(clockInterval);
+    clockState = false;
+  }
+});
 
+function createGauges() {
+  createCoreTempGauge();
+  createCoolentTempGauge();
+  createPowerOutputGauge();
+};
+
+function createCoreTempGauge() {
   coreGauge = new LinearGauge({
     renderTo: 'core',
-    width: containerWidth,
-    height: containerHeight,
     units: "°C",
     title: "Core Temperature",
+    height: 700,
     minValue: 0,
     maxValue: 100,
     barBeginCircle: false,
@@ -27,13 +40,19 @@ function createGauges() {
       { "from": 0, "to": 50, "color": "rgba(0,255,0,.75)" },
       { "from": 50, "to": 85, "color": "rgba(255,255,0,.75)" },
       { "from": 85, "to": 100, "color": "rgba(255,0,0,.75)" },
-    ]
+    ],
+    colorTitle: "#000",
+    colorUnits: "#000",
+    colorNumbers: "#000",
+    borders: true,
+    animationDuration: 15000,
+    animationRule: "cycle",
   });
+}
 
+function createCoolentTempGauge() {
   coolentGauge = new LinearGauge({
     renderTo: 'coolent',
-    width: containerWidth,
-    height: containerHeight,
     units: "°C",
     title: "Coolent Temperature",
     minValue: 0,
@@ -43,13 +62,22 @@ function createGauges() {
       { "from": 0, "to": 50, "color": "rgba(0,255,0,.75)" },
       { "from": 50, "to": 85, "color": "rgba(255,255,0,.75)" },
       { "from": 85, "to": 100, "color": "rgba(255,0,0,.75)" },
-    ]    
+    ],
+    colorTitle: "#000",
+    colorUnits: "#000",
+    colorNumbers: "#000",
+    colorPlate: "#FFF",
+    tickSide: "left",
+    numberSide: "left",
+    needleSide: "left",
+    borders: true 
   });
+}
 
-  powerGauge = new LinearGauge({
+function createPowerOutputGauge() {
+  powerGauge = new RadialGauge({
     renderTo: 'power',
-    width: containerWidth,
-    height: containerHeight,
+
     units: "V",
     title: "Power Output",
     minValue: 0,
@@ -59,9 +87,13 @@ function createGauges() {
       { "from": 0, "to": 50, "color": "rgba(0,255,0,.75)" },
       { "from": 50, "to": 85, "color": "rgba(255,255,0,.75)" },
       { "from": 85, "to": 100, "color": "rgba(255,0,0,.75)" },
-    ]   
+    ],
+    colorTitle: "#000",
+    colorUnits: "#000",
+    colorNumbers: "#000",
+    borders: false
   });
-};
+}
 
 function renderGauges(){
   coreGauge.draw();
@@ -69,17 +101,12 @@ function renderGauges(){
   powerGauge.draw();
 };
 
-clicker.mousedown(function(){
-  coreGauge.update({value: getRandomInt(100)})
-  coolentGauge.update({value: getRandomInt(100)})
-  powerGauge.update({value: getRandomInt(100)}) 
-  return false;
-});
-
-$(document).mouseup(function(){
-  clearInterval(timeout);
-  return false;
-});
+function randomUpdates() {
+  coreGauge.update({value: getRandomInt(100)});
+  coolentGauge.update({value: getRandomInt(100)});
+  powerGauge.update({value: getRandomInt(100)});
+  console.log("Update")
+}
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * max);
