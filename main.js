@@ -55,6 +55,7 @@ function createCoolentTempGauge() {
     renderTo: 'coolent',
     units: "°C",
     title: "Coolent Temperature",
+    height: 700,
     minValue: 0,
     maxValue: 100,
     barBeginCircle: false,
@@ -77,9 +78,9 @@ function createCoolentTempGauge() {
 function createPowerOutputGauge() {
   powerGauge = new RadialGauge({
     renderTo: 'power',
-
     units: "V",
     title: "Power Output",
+    height: 400,
     minValue: 0,
     maxValue: 100,
     barBeginCircle: false,
