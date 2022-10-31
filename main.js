@@ -1,6 +1,5 @@
 var powerGauge, coolentGauge, coreGauge;
 var clockInterval;
-var clockID = $('#clock');
 var clockState = false;
 
 
@@ -9,7 +8,7 @@ $(function() {
   renderGauges();
 });
 
-$(clockID).click(function(){
+$('#clock').click(function(){
   if (!clockState) {
     console.log("Clock Start");
     clockInterval = setInterval("randomUpdates()", 1000);
@@ -19,6 +18,10 @@ $(clockID).click(function(){
     clearInterval(clockInterval);
     clockState = false;
   }
+});
+
+$('#testApi').click(function(){
+  randomUpdates()
 });
 
 function createGauges() {
@@ -44,9 +47,7 @@ function createCoreTempGauge() {
     colorTitle: "#000",
     colorUnits: "#000",
     colorNumbers: "#000",
-    borders: true,
-    animationDuration: 15000,
-    animationRule: "cycle",
+    borders: true
   });
 }
 
@@ -103,12 +104,16 @@ function renderGauges(){
 };
 
 function randomUpdates() {
-  coreGauge.update({value: getRandomInt(100)});
-  coolentGauge.update({value: getRandomInt(100)});
-  powerGauge.update({value: getRandomInt(100)});
-  console.log("Update")
+  $.ajax({
+    type: "GET",
+    url: "http://127.0.0.1:5000/",
+    dataType: "json",
+    success: function(responce){
+      console.log(responce);
+      coreGauge.update({value: responce.coreTemp});
+      coolentGauge.update({value: responce.coolentTemp});
+      powerGauge.update({value: responce.power});
+    }
+  });
 }
 
-function getRandomInt(max) {
-  return Math.floor(Math.random() * max);
-}
