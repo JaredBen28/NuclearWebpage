@@ -90,7 +90,7 @@ def xprime(env, interval):
                
         
         effemeral = np.array(xCurrent)
-        effemeral.tofile('/var/www/NuclearWebpage/flask/sample.csv', sep=",")
+        effemeral.tofile('sample.csv', sep=",")
         yield env.timeout(interval) 
         
 

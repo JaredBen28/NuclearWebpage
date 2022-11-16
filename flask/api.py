@@ -10,7 +10,7 @@ app = Flask(__name__)
 @app.route("/", methods=['GET'])
 @cross_origin()
 def get_example():
-    file = open("/var/www/NuclearWebpage/flask/sample.csv", "r")
+    file = open("sample.csv", "r")
     data = list(csv.reader(file, delimiter=","))
     file.close()
 
