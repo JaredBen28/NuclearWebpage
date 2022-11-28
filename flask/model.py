@@ -87,8 +87,6 @@ def xprime(env, interval):
         print(env.now)
         xCurrent = xMid
         
-               
-        
         effemeral = np.array(xCurrent)
         effemeral.tofile('sample.csv', sep=",")
         yield env.timeout(interval) 

@@ -1,4 +1,4 @@
-var powerGauge, coolentGauge, coreGauge;
+var powerGauge, coolantGauge, coreGauge;
 var clockInterval;
 var clockState = false;
 
@@ -26,7 +26,7 @@ $('#testApi').click(function(){
 
 function createGauges() {
   createCoreTempGauge();
-  createCoolentTempGauge();
+  createCoolantTempGauge();
   createPowerOutputGauge();
 };
 
@@ -47,11 +47,11 @@ function createCoreTempGauge() {
   });
 }
 
-function createCoolentTempGauge() {
-  coolentGauge = new LinearGauge({
-    renderTo: 'coolent',
+function createCoolantTempGauge() {
+  coolantGauge = new LinearGauge({
+    renderTo: 'coolant',
     units: "°C",
-    title: "Coolent Temperature",
+    title: "Coolant Temperature",
     height: 700,
     minValue: -10,
     maxValue: 10,
@@ -90,21 +90,35 @@ function createPowerOutputGauge() {
 
 function renderGauges(){
   coreGauge.draw();
-  coolentGauge.draw();
+  coolantGauge.draw();
   powerGauge.draw();
 };
 
 function randomUpdates() {
   $.ajax({
     type: "GET",
-    url: "http://127.0.0.1:5000/",
+    url: "http://127.0.0.1:5000",
     dataType: "json",
-    success: function(responce){
-      console.log(responce);
-      coreGauge.update({value: responce.coreTemp});
-      coolentGauge.update({value: responce.coolentTemp});
-      powerGauge.update({value: responce.power});
+    success: function(response){
+      console.log(response);
+      coreGauge.update({value: response.coreTemp});
+      coolantGauge.update({value: response.coolantTemp});
+      powerGauge.update({value: response.power});
     }
   });
 }
 
+$('#submit').click(function(){
+  console.log($('#control').val());
+  $.ajax({
+    type: "POST",
+    url: "http://127.0.0.1:5000",
+    contentType: "application/json; charset=utf-8",
+    dataType: 'json',
+    data: JSON.stringify({control: $('#control').val()}),
+    // data: {control : $('#control').val()},
+    success: function(response){
+      console.log(response);
+    }
+  });
+});
