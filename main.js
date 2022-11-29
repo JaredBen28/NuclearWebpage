@@ -49,7 +49,7 @@ function createCoreTempGauge() {
 
 function createCoolantTempGauge() {
   coolantGauge = new LinearGauge({
-    renderTo: 'coolant',
+    renderTo: "coolant",
     units: "°C",
     title: "Coolant Temperature",
     height: 700,
@@ -109,14 +109,12 @@ function randomUpdates() {
 }
 
 $('#submit').click(function(){
-  console.log($('#control').val());
   $.ajax({
     type: "POST",
     url: "http://127.0.0.1:5000",
     contentType: "application/json; charset=utf-8",
     dataType: 'json',
     data: JSON.stringify({control: $('#control').val()}),
-    // data: {control : $('#control').val()},
     success: function(response){
       console.log(response);
     }
