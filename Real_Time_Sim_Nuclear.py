@@ -8,7 +8,7 @@ Created on Sun Nov  6 11:10:45 2022
 # Libary Importations
 import numpy as np
 import matplotlib.pyplot as plt 
-
+import csv
 import time
 import simpy
 
@@ -28,6 +28,8 @@ Kp = 0.3
 Ki = 0
 Tc = -1
 
+msv = 0
+
 
 def step(magnitude, time, delay):
     
@@ -41,6 +43,10 @@ def step(magnitude, time, delay):
 def xprime(env, interval):
     while True:
         global xCurrent
+        c = open("Control.csv", "r")
+        msv = float(c.read())
+        c.close()
+                
         #assigning their states to a columns in the matrix 
         t = env.now
         
@@ -53,9 +59,18 @@ def xprime(env, interval):
         C6 = xCurrent[6]
         T = xCurrent[7]
         k = xCurrent[8]
-         
-        Tref = step(1,t,10)
+        Q = xCurrent[9]
+        Q2 = xCurrent[10]
+     
+        Tref = 0        
+        #Tref = step(1,t,10)
         error = Tref - T
+        m_in = msv
+        
+        Tstm = 1
+        Tf = 0 
+        c = 1.402
+        m_rxn = 1 # mass flow rate on the reaction side
     
         #Reactivity dependent on Temperature
         rho = -alpha*T + Kp*(error) + Ki*k
@@ -70,9 +85,12 @@ def xprime(env, interval):
         dc6dt = beta6*n - lam1*C6
         dTdt = -T/tau + K*n + Tc
         dkdt = Tref - T
-         
+        dQdt = m_rxn*c*(Tc-T) 
+        dQ2dt = m_in*c*(Tstm-Tf)
+        
+        
         # Differential Matrix
-        xPrime = [dndt, dc1dt, dc2dt, dc3dt, dc4dt, dc5dt, dc6dt, dTdt, dkdt]
+        xPrime = [dndt, dc1dt, dc2dt, dc3dt, dc4dt, dc5dt, dc6dt, dTdt, dkdt, dQdt, dQ2dt]
         xMid = [xCurrent[0] + interval * xPrime[0],
                     xCurrent[1] + interval * xPrime[1],
                     xCurrent[2] + interval * xPrime[2],
@@ -81,11 +99,13 @@ def xprime(env, interval):
                     xCurrent[5] + interval * xPrime[5],
                     xCurrent[6] + interval * xPrime[6],
                     xCurrent[7] + interval * xPrime[7],
-                    xCurrent[8] + interval * xPrime[8]]
+                    xCurrent[8] + interval * xPrime[8],
+                    xPrime[9], 
+                    xPrime[10]]
         
         #xC + interval * xPrime
         #print(str(xMid))
-        print(env.now)
+        #print(env.now)
         xCurrent = xMid
         
                
@@ -100,7 +120,7 @@ def xprime(env, interval):
         
 
 if __name__ == '__main__':
-    xCurrent = [1, beta1/lam1, beta2/lam1, beta3/lam1, beta4/lam1, beta5/lam1, beta6/lam1, 0,0]
+    xCurrent = [1, beta1/lam1, beta2/lam1, beta3/lam1, beta4/lam1, beta5/lam1, beta6/lam1,0,0,0,0]
     
     env = simpy.rt.RealtimeEnvironment()
     proc = env.process(xprime(env, 0.05))
