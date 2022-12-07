@@ -6,12 +6,25 @@ var clockState = false;
 $(function() {
   createGauges();
   renderGauges();
+  $("#dial").knob({
+    'min':0,
+    'max':100,
+    'release' : function(v){ 
+      console.log(v)
+      mfr(v)
+    },
+    width:"150",
+    // fgColor:"#C0ffff",
+    // skin:"tron",
+    thickness:".2",
+    angleOffset:"180",
+  });
 });
 
 $('#clock').click(function(){
   if (!clockState) {
     console.log("Clock Start");
-    clockInterval = setInterval("randomUpdates()", 1000);
+    clockInterval = setInterval("randomUpdates()", 100);
     clockState = true;
   } else {
     console.log("Clock Stop")
@@ -120,3 +133,16 @@ $('#submit').click(function(){
     }
   });
 });
+
+function mfr(v) {
+  $.ajax({
+    type: "POST",
+    url: "http://127.0.0.1:5000",
+    contentType: "application/json; charset=utf-8",
+    dataType: 'json',
+    data: JSON.stringify({control: v}),
+    success: function(response){
+      console.log(response);
+    }
+  });
+}

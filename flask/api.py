@@ -18,7 +18,7 @@ def login():
         if content == "":
             return jsonify({'response':'not valid'})
         effemeral = np.array(float(content))
-        effemeral.tofile('control.csv', sep=",")
+        effemeral.tofile('Control.csv', sep=",")
         return jsonify({'response':'Mass Flow Changed', 'mfv': content})
    else:
         file = open("sample.csv", "r")

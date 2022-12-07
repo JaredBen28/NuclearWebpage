@@ -43,7 +43,7 @@ def step(magnitude, time, delay):
 def xprime(env, interval):
     while True:
         global xCurrent
-        c = open("Control.csv", "r")
+        c = open("control.csv", "r")
         msv = float(c.read())
         c.close()
                 
