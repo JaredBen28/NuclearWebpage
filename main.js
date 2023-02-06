@@ -1,4 +1,5 @@
 var powerGauge, coolantGauge, coreGauge;
+var placeholder1, placeholder2, placeholder3, placeholder4
 var clockInterval;
 var clockState = false;
 
@@ -6,6 +7,7 @@ var clockState = false;
 $(function() {
   createGauges();
   renderGauges();
+  
   $("#dial").knob({
     'min':0,
     'max':100,
@@ -24,7 +26,7 @@ $(function() {
 $('#clock').click(function(){
   if (!clockState) {
     console.log("Clock Start");
-    clockInterval = setInterval("randomUpdates()", 100);
+    clockInterval = setInterval("updateGraphs()", 200);
     clockState = true;
   } else {
     console.log("Clock Stop")
@@ -34,13 +36,17 @@ $('#clock').click(function(){
 });
 
 $('#testApi').click(function(){
-  randomUpdates()
+  updateGraphs()
 });
 
 function createGauges() {
   createCoreTempGauge();
   createCoolantTempGauge();
   createPowerOutputGauge();
+  placeholder1 = createPlaceHolder(place1)
+  placeholder2 = createPlaceHolder(place2)
+  placeholder3 = createPlaceHolder(place3)
+  placeholder4 = createPlaceHolder(place4)
 };
 
 function createCoreTempGauge() {
@@ -83,16 +89,17 @@ function createCoolantTempGauge() {
 function createPowerOutputGauge() {
   powerGauge = new RadialGauge({
     renderTo: 'power',
-    units: "V",
     title: "Power Output",
     height: 400,
     minValue: 0,
-    maxValue: 100,
+    maxValue: 120,
+    units: "%",
     barBeginCircle: false,
+    majorTicks: [0,10,20,30,40,50,60,70,80,90,100,110,120],
+    //change tick marks
     highlights: [
-      { "from": 0, "to": 50, "color": "rgba(0,255,0,.75)" },
-      { "from": 50, "to": 85, "color": "rgba(255,255,0,.75)" },
-      { "from": 85, "to": 100, "color": "rgba(255,0,0,.75)" },
+      { "from": 0, "to": 100, "color": "rgba(0,255,0,.75)" },
+      { "from": 100, "to": 120, "color": "rgba(255,0,0,.75)" },
     ],
     colorTitle: "#000",
     colorUnits: "#000",
@@ -101,13 +108,40 @@ function createPowerOutputGauge() {
   });
 }
 
+function createPlaceHolder(placeHolderName) {
+  return new RadialGauge({
+    renderTo: placeHolderName,
+    title: "PlaceHolder",
+    height: 400,
+    minValue: 0,
+    maxValue: 120,
+    units: "%",
+    barBeginCircle: false,
+    majorTicks: [0,10,20,30,40,50,60,70,80,90,100,110,120],
+    //change tick marks
+    highlights: [
+      { "from": 0, "to": 100, "color": "rgba(0,255,0,.75)" },
+      { "from": 100, "to": 120, "color": "rgba(255,0,0,.75)" },
+    ],
+    colorTitle: "#000",
+    colorUnits: "#000",
+    colorNumbers: "#000",
+    borders: false
+  });
+}
+
+
 function renderGauges(){
   coreGauge.draw();
   coolantGauge.draw();
   powerGauge.draw();
+  placeholder1.draw();
+  placeholder2.draw();
+  placeholder3.draw();
+  placeholder4.draw();
 };
 
-function randomUpdates() {
+function updateGraphs() {
   $.ajax({
     type: "GET",
     url: "http://127.0.0.1:5000",
@@ -121,19 +155,6 @@ function randomUpdates() {
   });
 }
 
-$('#submit').click(function(){
-  $.ajax({
-    type: "POST",
-    url: "http://127.0.0.1:5000",
-    contentType: "application/json; charset=utf-8",
-    dataType: 'json',
-    data: JSON.stringify({control: $('#control').val()}),
-    success: function(response){
-      console.log(response);
-    }
-  });
-});
-
 function mfr(v) {
   $.ajax({
     type: "POST",
@@ -146,3 +167,6 @@ function mfr(v) {
     }
   });
 }
+
+// Delta T graph
+// Change dial to steam 

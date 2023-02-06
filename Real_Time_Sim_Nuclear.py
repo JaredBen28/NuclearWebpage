@@ -110,12 +110,12 @@ def xprime(env, interval):
         
                
         
-       # effemeral = np.array(xCurrent)
-       # effemeral.tofile('sample.csv', sep=",")
-        f = open("sample.csv", "a")
-        f.write(str(xCurrent).replace("[", "").replace("]", ""))
-        f.write("\n")
-        f.close()
+        effemeral = np.array(xCurrent)
+        effemeral.tofile('sample.csv', sep=",")
+        # f = open("sample.csv", "a")
+        # f.write(str(xCurrent).replace("[", "").replace("]", ""))
+        # f.write("\n")
+        # f.close()
         yield env.timeout(interval) 
         
 

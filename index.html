@@ -17,7 +17,10 @@
       integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" 
       crossorigin="anonymous"></script>
 
+    <!-- css -->
     <link href="./styles.css" rel="stylesheet">
+
+    <!-- Js and jquery -->
     <script type="text/javascript" src="./jquery/jquery-3.6.1.js"></script>
     <script type="text/javascript" src="./js_packages/gauge.min.js"></script>
     <script type="text/javascript" src="./jquery/jquery.knob.js"></script>
@@ -42,12 +45,28 @@
             <canvas id="power"></canvas>
           </div>
         </div>
-        <div class="col-lg-1"></div>
-        <div class="col-lg-2" style="padding-top: 10px;">
+        <div class="col-lg-5">
+          <div class="row" style="padding-bottom: 10px; padding-top: 10px;">
+            <div class="col-lg-6">
+              <canvas id="place1" style="padding-right: 10px; padding-left: 10px;"></canvas>
+            </div>
+            <div class="col-lg-6">
+              <canvas id="place2" style="padding-right: 10px; padding-left: 10px;"></canvas>
+            </div>
+          </div>
+          <div class="row" style="padding-bottom: 10px; padding-top: 10px;">
+            <div class="col-lg-6">
+              <canvas id="place3" style="padding-right: 10px; padding-left: 10px;"></canvas>
+            </div>
+            <div class="col-lg-6">
+              <canvas id="place4" style="padding-right: 10px; padding-left: 10px;"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-1" style="padding-top: 10px;">
           <canvas id="core"></canvas>
         </div>
-        <div class="col-lg-1"></div>
-        <div class="col-lg-2" style="padding-top: 10px;">
+        <div class="col-lg-1" style="padding-top: 10px;">
           <canvas id="coolant"></canvas>
         </div>
         <div class="col-lg-1"></div>
@@ -58,5 +77,7 @@
       <p>Cyber Physical Systems Project</p>
     </footer>
   </body>
+
+  <!-- my js -->
   <script type="text/javascript" src="./main.js"></script>
 </html>
