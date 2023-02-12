@@ -7,9 +7,10 @@ Created on Sun Nov  6 11:10:45 2022
 # Libary Importations
 import numpy as np
 import matplotlib.pyplot as plt 
-
+import os
 import time
 import simpy
+import csv
 
 xCurrent = []
 # References
@@ -87,12 +88,20 @@ def xprime(env, interval):
         print(env.now)
         xCurrent = xMid
         
-        effemeral = np.array(xCurrent)
-        effemeral.tofile('sample.csv', sep=",")
+        np.array(xCurrent).tofile('sample.csv', sep=",")
+        # f = open('test.txt', 'a')
+        # f.write('\n'+ str(xCurrent))
+        # f.close()
+
+        with open('test.txt', 'a') as file:
+            w = csv.writer(file, dialect='excel')
+            w.writerow(xCurrent)
+
         yield env.timeout(interval) 
-        
+
 
 if __name__ == '__main__':
+    os.remove('test.txt')
     xCurrent = [1, beta1/lam1, beta2/lam1, beta3/lam1, beta4/lam1, beta5/lam1, beta6/lam1, 0,0]
     
     env = simpy.rt.RealtimeEnvironment()

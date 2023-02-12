@@ -15,10 +15,8 @@ def login():
    if request.method == 'POST':
         content = request.json
         content = content['control']
-        if content == "":
-            return jsonify({'response':'not valid'})
-        effemeral = np.array(float(content))
-        effemeral.tofile('Control.csv', sep=",")
+        if content == "": return jsonify({'response':'not valid'})
+        np.array(float(content)).tofile('Control.csv', sep=",")
         return jsonify({'response':'Mass Flow Changed', 'mfv': content})
    else:
         file = open("sample.csv", "r")
@@ -29,6 +27,7 @@ def login():
             'coreTemp': data[0][7], 
             'coolantTemp': 3
         }
-        return jsonify(resp)
+        # return jsonify(resp)
+        return jsonify(data)
 if __name__ == '__main__':
     app.run(debug=True)
