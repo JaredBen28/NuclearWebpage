@@ -11,12 +11,12 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 @app.route("/", methods=['POST', 'GET'])
 @cross_origin()
-def login():
+def get():
    if request.method == 'POST':
         content = request.json
         content = content['control']
         if content == "": return jsonify({'response':'not valid'})
-        np.array(float(content)).tofile('Control.csv', sep=",")
+        np.array(float(content)).tofile('control.csv')
         return jsonify({'response':'Mass Flow Changed', 'mfv': content})
    else:
         file = open("sample.csv", "r")

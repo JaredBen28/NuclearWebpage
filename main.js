@@ -2,6 +2,10 @@ var powerGauge, coolantGauge, coreGauge;
 var clockInterval, chartInterval;
 var clockState = false;
 var deltaTChart;
+const deltaTMax = 10;
+const deltaTMin = -200;
+const deltaTUpperLimit = 10;
+const deltaTLowerLimit = -100;
 
 // Website Init
 $(function() {
@@ -16,7 +20,7 @@ $('#clock').click(function(){
   if (!clockState) {
     console.log("Clock Start");
     clockInterval = setInterval("updateDeltaTChart(deltaTChart)", 200);
-    chartInterval = setInterval("updateChart(deltaTChart)", 1000)
+    chartInterval = setInterval("updateChartHelperFunction(deltaTChart)", 2000)
     clockState = true;
   } else {
     console.log("Clock Stop")
@@ -28,23 +32,24 @@ $('#clock').click(function(){
 
 $('#testApi').click(function(){
   updateDeltaTChart(deltaTChart);
-  updateChart(deltaTChart)
+  updateChartHelperFunction(deltaTChart)
 });
 
 // Steam Knob
 function createSteamKnob() {
   $("#dial").knob({
-    'min':0,
-    'max':100,
+    'min': 0,
+    'max': 100,
     'release' : function(v){ 
       console.log(v)
       updateSteamValue(v)
     },
-    width:"150",
-    // fgColor:"#C0ffff",
-    // skin:"tron",
-    thickness:".2",
-    angleOffset:"180",
+    'width':"150",
+    'fgColor': "#222222",
+    'bgColor': "#FFFFFF",
+    'thickness':".2",
+    'angleOffset':"180",
+    'displayPrevious': true,
   });
 }
 
@@ -120,6 +125,17 @@ function createPowerOutputGauge() {
   });
 }
 
+function getDateTime() {
+  var currentdate = new Date(); 
+  return datetime = currentdate.getDate() + "-"
+    + (currentdate.getMonth()+1)  + "-" 
+    + currentdate.getFullYear() + " "  
+    + currentdate.getHours() + ":"  
+    + currentdate.getMinutes() + ":" 
+    + currentdate.getSeconds() + "."
+    + currentdate.getMilliseconds();
+}
+
 function updateSteamValue(newSteamValue) {
   $.ajax({
     type: "POST",
@@ -131,17 +147,6 @@ function updateSteamValue(newSteamValue) {
       console.log(response);
     }
   });
-}
-
-function getDateTime() {
-  var currentdate = new Date(); 
-  return datetime = currentdate.getDate() + "-"
-    + (currentdate.getMonth()+1)  + "-" 
-    + currentdate.getFullYear() + " "  
-    + currentdate.getHours() + ":"  
-    + currentdate.getMinutes() + ":" 
-    + currentdate.getSeconds() + "."
-    + currentdate.getMilliseconds();
 }
 
 //Charts
@@ -159,12 +164,28 @@ function updateDeltaTChart(chartName){
   });
 }
 
-function updateChart(chartName) {
+function updateChartHelperFunction(chartName) {
   chartName.update('none')
 }
 
 function createDeltaTChart() {
   const ctx = document.getElementById("chart");
+  const horizontalArbitraryLine = {
+    id: 'horizontalArbitraryLine',
+    beforeDraw(chart, args, options) {
+      const { ctx, chartArea: {top, right, bottom, left, width, height}, scales: {x, y} } = chart;
+      ctx.save();
+
+      ctx.strokeStyle = 'Red';
+      const upperLimit = y.getPixelForValue(deltaTUpperLimit)
+      const lowerLimit = y.getPixelForValue(deltaTLowerLimit)
+
+      ctx.strokeRect(left, upperLimit, width, 0)
+      ctx.strokeRect(left, lowerLimit, width, 0)
+
+    }
+  }
+
   const config = {
     type: 'line',
     data: {
@@ -181,7 +202,7 @@ function createDeltaTChart() {
         }
       },
       scales: {
-        xAxis: {
+        x: {
           type: 'time',
           time: {
             unit: 'millisecond',
@@ -194,7 +215,17 @@ function createDeltaTChart() {
             text: "Time in min:sec",
             display: true
           },
+          steps: 10
         },
+        y: {
+          title: {
+            text: "",
+            display: true
+          },
+          min: deltaTMin,
+          max: deltaTMax,
+          steps: 10
+        }
       },
       plugins: {
         title: {
@@ -209,7 +240,8 @@ function createDeltaTChart() {
           }
         }
       }
-    }
+    },
+    plugins: [horizontalArbitraryLine]
   };
   deltaTChart = new Chart(ctx, config);
 }
