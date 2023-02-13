@@ -14,9 +14,10 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 def get():
    if request.method == 'POST':
         content = request.json
-        content = content['control']
-        if content == "": return jsonify({'response':'not valid'})
-        np.array(float(content)).tofile('control.csv')
+        content = [content['control']]
+        if content[0] == "": return jsonify({'response':'not valid'})
+        np.array(content).tofile('control.txt', sep=",")
+
         return jsonify({'response':'Mass Flow Changed', 'mfv': content})
    else:
         file = open("sample.csv", "r")

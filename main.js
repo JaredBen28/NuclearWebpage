@@ -1,17 +1,29 @@
-var powerGauge, coolantGauge, coreGauge;
 var clockInterval, chartInterval;
 var clockState = false;
-var deltaTChart;
-const deltaTMax = 10;
-const deltaTMin = -200;
-const deltaTUpperLimit = 10;
-const deltaTLowerLimit = -100;
+var powerGauge;
+var reactorDeltaTChart;
+var steamDeltaTChart;
+
+const powerOutputMax = 65;
+const powerOutputUpperLimit = 50;
+const powerOutLowerLimit = 25;
+const powerOutputMin = 15;
+
+const reactorDeltaTMax = 1000;
+const reactorDeltaTUpperLimit = 900;
+const reactorDeltaTLowerLimit = 100;
+const reactorDeltaTMin = 00;
+
+const steamDeltaTMax = 1000;
+const steamDeltaTUpperLimit = 900;
+const steamDeltaTLowerLimit = 100;
+const steamDeltaTMin = 0;
 
 // Website Init
 $(function() {
-  createGauges();
-  renderGauges();
-  createDeltaTChart();
+  createPowerOutputGauge();
+  createReactorDeltaTChart();
+  createSteamDeltaTChart();
   createSteamKnob()
 });
 
@@ -19,8 +31,8 @@ $(function() {
 $('#clock').click(function(){
   if (!clockState) {
     console.log("Clock Start");
-    clockInterval = setInterval("updateDeltaTChart(deltaTChart)", 200);
-    chartInterval = setInterval("updateChartHelperFunction(deltaTChart)", 2000)
+    clockInterval = setInterval("updateAllFigures(reactorDeltaTChart, steamDeltaTChart)", 1000);
+    chartInterval = setInterval("updateChartHelperFunction(reactorDeltaTChart, steamDeltaTChart)", 2000)
     clockState = true;
   } else {
     console.log("Clock Stop")
@@ -31,8 +43,8 @@ $('#clock').click(function(){
 });
 
 $('#testApi').click(function(){
-  updateDeltaTChart(deltaTChart);
-  updateChartHelperFunction(deltaTChart)
+  updateAllFigures(reactorDeltaTChart, steamDeltaTChart);
+  updateChartHelperFunction(reactorDeltaTChart, steamDeltaTChart);
 });
 
 // Steam Knob
@@ -53,87 +65,29 @@ function createSteamKnob() {
   });
 }
 
-// Gauges on Screen 
-function renderGauges(){
-  coreGauge.draw();
-  coolantGauge.draw();
-  powerGauge.draw();
-};
-
-function createGauges() {
-  createCoreTempGauge();
-  createCoolantTempGauge();
-  createPowerOutputGauge();
-};
-
-function createCoreTempGauge() {
-  coreGauge = new LinearGauge({
-    renderTo: 'core',
-    units: "°C",
-    title: "Core Temperature",
-    height: 700,
-    minValue: -1,
-    maxValue: 5,
-    barBeginCircle: false,
-    majorTicks: [-1, 0, 1, 2, 3, 4, 5],
-    colorTitle: "#000",
-    colorUnits: "#000",
-    colorNumbers: "#000",
-    borders: true
-  });
-}
-
-function createCoolantTempGauge() {
-  coolantGauge = new LinearGauge({
-    renderTo: "coolant",
-    units: "°C",
-    title: "Coolant Temperature",
-    height: 700,
-    minValue: -10,
-    maxValue: 10,
-    barBeginCircle: false,
-    colorTitle: "#000",
-    colorUnits: "#000",
-    colorNumbers: "#000",
-    colorPlate: "#FFF",
-    tickSide: "left",
-    numberSide: "left",
-    needleSide: "left",
-    borders: true 
-  });
-}
-
+// Power Output Gauge
 function createPowerOutputGauge() {
   powerGauge = new RadialGauge({
     renderTo: 'power',
     title: "Power Output",
     height: 400,
-    minValue: 0,
-    maxValue: 120,
-    units: "%",
+    minValue: powerOutputMin,
+    maxValue: powerOutputMax,
+    units: "MW",
     barBeginCircle: false,
-    majorTicks: [0,10,20,30,40,50,60,70,80,90,100,110,120],
+    majorTicks: [powerOutputMin, powerOutLowerLimit, powerOutputUpperLimit, powerOutputMax],
     //change tick marks
     highlights: [
-      { "from": 0, "to": 100, "color": "rgba(0,255,0,.75)" },
-      { "from": 100, "to": 120, "color": "rgba(255,0,0,.75)" },
+      {"from": powerOutputMin, "to": powerOutLowerLimit, "color": "rgba(255,0,0,.75)"},
+      {"from": powerOutLowerLimit, "to": powerOutputUpperLimit, "color": "rgba(0,255,0,.75)"},
+      {"from": powerOutputUpperLimit, "to": powerOutputMax, "color": "rgba(255,0,0,.75)"}
     ],
     colorTitle: "#000",
     colorUnits: "#000",
     colorNumbers: "#000",
     borders: false
   });
-}
-
-function getDateTime() {
-  var currentdate = new Date(); 
-  return datetime = currentdate.getDate() + "-"
-    + (currentdate.getMonth()+1)  + "-" 
-    + currentdate.getFullYear() + " "  
-    + currentdate.getHours() + ":"  
-    + currentdate.getMinutes() + ":" 
-    + currentdate.getSeconds() + "."
-    + currentdate.getMilliseconds();
+  powerGauge.draw();
 }
 
 function updateSteamValue(newSteamValue) {
@@ -150,26 +104,44 @@ function updateSteamValue(newSteamValue) {
 }
 
 //Charts
-function updateDeltaTChart(chartName){
+function getDateTime() {
+  var currentdate = new Date(); 
+  return datetime = currentdate.getDate() + "-"
+    + (currentdate.getMonth()+1)  + "-" 
+    + currentdate.getFullYear() + " "  
+    + currentdate.getHours() + ":"  
+    + currentdate.getMinutes() + ":" 
+    + currentdate.getSeconds() + "."
+    + currentdate.getMilliseconds();
+}
+
+function updateAllFigures(reactorTemperatureChart, steamTemperatureChart){
   $.ajax({
     type: "GET",
     url: "http://127.0.0.1:5000",
     dataType: "json",
     success: function(response){
-      chartName.data.datasets[0].data[
-        chartName.data.datasets[0].data.length] 
-        = {x: String(getDateTime()), y: response[0][7]}
-      console.log(chartName.data.datasets[0].data)
+      console.log(response)
+      currentDateTime = getDateTime()
+      reactorTemperatureChart.data.datasets[0].data[
+        reactorTemperatureChart.data.datasets[0].data.length] 
+        = {x: currentDateTime, y: response[0][8]};
+      steamTemperatureChart.data.datasets[0].data[
+        steamTemperatureChart.data.datasets[0].data.length] 
+        = {x: currentDateTime, y: response[0][21]};
+
+      powerGauge.value = response[0][0]
     }
   });
 }
 
-function updateChartHelperFunction(chartName) {
-  chartName.update('none')
+function updateChartHelperFunction(reactor, steam) {
+  reactor.update('none');
+  steam.update('none');
 }
 
-function createDeltaTChart() {
-  const ctx = document.getElementById("chart");
+function createReactorDeltaTChart() {
+  const ctx = document.getElementById("reactorTemperatureChart");
   const horizontalArbitraryLine = {
     id: 'horizontalArbitraryLine',
     beforeDraw(chart, args, options) {
@@ -177,8 +149,8 @@ function createDeltaTChart() {
       ctx.save();
 
       ctx.strokeStyle = 'Red';
-      const upperLimit = y.getPixelForValue(deltaTUpperLimit)
-      const lowerLimit = y.getPixelForValue(deltaTLowerLimit)
+      const upperLimit = y.getPixelForValue(reactorDeltaTUpperLimit)
+      const lowerLimit = y.getPixelForValue(reactorDeltaTLowerLimit)
 
       ctx.strokeRect(left, upperLimit, width, 0)
       ctx.strokeRect(left, lowerLimit, width, 0)
@@ -196,6 +168,7 @@ function createDeltaTChart() {
       }]
     },
     options: {
+      maintainAspectRatio: false,
       elements: {
         point: {
           radius: .1,
@@ -215,22 +188,23 @@ function createDeltaTChart() {
             text: "Time in min:sec",
             display: true
           },
-          steps: 10
+          ticks: {
+            maxTicksLimit: 20
+          }
         },
         y: {
           title: {
             text: "",
             display: true
           },
-          min: deltaTMin,
-          max: deltaTMax,
-          steps: 10
+          min: reactorDeltaTMin,
+          max: reactorDeltaTMax
         }
       },
       plugins: {
         title: {
           display: true,
-          text: "Temp over Time",
+          text: "Reactor Temperature Over Time",
           padding: {
             top: 10,
             bottom: 10
@@ -243,5 +217,85 @@ function createDeltaTChart() {
     },
     plugins: [horizontalArbitraryLine]
   };
-  deltaTChart = new Chart(ctx, config);
+  reactorDeltaTChart = new Chart(ctx, config);
+}
+
+function createSteamDeltaTChart() {
+  const ctx = document.getElementById("steamTemperatureChart");
+  const horizontalArbitraryLine = {
+    id: 'horizontalArbitraryLine',
+    beforeDraw(chart, args, options) {
+      const { ctx, chartArea: {top, right, bottom, left, width, height}, scales: {x, y} } = chart;
+      ctx.save();
+
+      ctx.strokeStyle = 'Red';
+      const upperLimit = y.getPixelForValue(steamDeltaTUpperLimit)
+      const lowerLimit = y.getPixelForValue(steamDeltaTLowerLimit)
+
+      ctx.strokeRect(left, upperLimit, width, 0)
+      ctx.strokeRect(left, lowerLimit, width, 0)
+
+    }
+  }
+
+  const config = {
+    type: 'line',
+    data: {
+      datasets: [{
+        data: null,
+        label: "Temperature",
+        fill: false
+      }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      elements: {
+        point: {
+          radius: .1,
+        }
+      },
+      scales: {
+        x: {
+          type: 'time',
+          time: {
+            unit: 'millisecond',
+            displayFormats: {
+              millisecond: 'mm:ss'
+            }
+          },
+          distribution: 'linear',
+          title: {
+            text: "Time in min:sec",
+            display: true
+          },
+          ticks: {
+            maxTicksLimit: 20
+          }
+        },
+        y: {
+          title: {
+            text: "",
+            display: true
+          },
+          min: steamDeltaTMin,
+          max: steamDeltaTMax
+        }
+      },
+      plugins: {
+        title: {
+          display: true,
+          text: "Super Heated Steam Temperature Over Time",
+          padding: {
+            top: 10,
+            bottom: 10
+          },
+          font: {
+            size: 18
+          }
+        }
+      }
+    },
+    plugins: [horizontalArbitraryLine]
+  };
+  steamDeltaTChart = new Chart(ctx, config);
 }

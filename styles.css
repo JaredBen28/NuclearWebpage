@@ -16,3 +16,7 @@ footer {
 button {
     margin: 10px;
 }
+
+.chart {
+    height: 40vh;
+}

@@ -232,14 +232,14 @@ def xprime(env, interval):
     while True:
         global xCurrent
        
-        c = open("Control.csv", "r")
+        c = open("control.txt", "r")
         msv = float(c.read())
         c.close()
                 
         #assigning their states to a columns in the matrix 
         t = env.now
         
-        n = xCurrent[0]
+        n = xCurrent[0] # Reactor Power (MW) -- Min: Max: Limit Upper: Limit Lower:
         C1 = xCurrent[1]
         C2 = xCurrent[2]
         C3 = xCurrent[3]
@@ -247,7 +247,7 @@ def xprime(env, interval):
         C5 = xCurrent[5]
         C6 = xCurrent[6]
         k = xCurrent[7]
-        T = xCurrent[8]
+        T = xCurrent[8] # Reactor Temp (F) -- Min: Max:  Limit Upper:  Limit Lower: 
         Tp1 = xCurrent[9]
         Tp2 = xCurrent[10]
         Tp3 = xCurrent[11]
@@ -260,10 +260,10 @@ def xprime(env, interval):
         Tw4 = xCurrent[18]
         Tw5 = xCurrent[19]
         Tw6 = xCurrent[20]
-        Ts1 = xCurrent[21]
+        Ts1 = xCurrent[21] # Super Heated Steam Temp -- Min: Max: Limit Upper: Limit Lower: 
         Ts2 = xCurrent[22]
         Tsc = xCurrent[23]
-        Ws = xCurrent[24]
+        Ws = xCurrent[24] # Steam Flow Rate
         
 
 
@@ -369,17 +369,16 @@ def xprime(env, interval):
                       
         np.array(xCurrent).tofile('sample.csv', sep=",")
 
-        f = open("sampleCont.csv", "a")
-        f.write(str(xCurrent).replace("[", "").replace("]", "") + "\n")
-        f.close()
+        # f = open("sampleCont.csv", "a")
+        # f.write(str(xCurrent).replace("[", "").replace("]", "") + "\n")
+        # f.close()
         yield env.timeout(interval) 
         
 
 if __name__ == '__main__':
-    os.remove('sampleCont.csv')
-    os.remove('sample.csv')
+    # os.remove('sample.csv')
+    xCurrent = [1, beta1/lam1, beta2/lam1, beta3/lam1, beta4/lam1, beta5/lam1, beta6/lam1, 0, 200, 400, 400, 400, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-    xCurrent = [1, beta1/lam1, beta2/lam1, beta3/lam1, beta4/lam1, beta5/lam1,beta6/lam1,0,200,400,400,400,0,0,0,0,0,0,0,0,0,0,0,0,0]
     env = simpy.rt.RealtimeEnvironment()
     proc = env.process(xprime(env,0.01))
     
