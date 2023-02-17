@@ -3,7 +3,6 @@ import csv
 from flask import Flask, jsonify, request, Response
 from flask_cors import CORS, cross_origin
 import numpy as np
-import json
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -17,7 +16,6 @@ def get():
         content = [content['control']]
         if content[0] == "": return jsonify({'response':'not valid'})
         np.array(content).tofile('control.txt', sep=",")
-
         return jsonify({'response':'Mass Flow Changed', 'mfv': content})
    else:
         file = open("sample.csv", "r")

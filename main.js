@@ -12,12 +12,12 @@ const powerOutputMin = 15;
 const reactorDeltaTMax = 1000;
 const reactorDeltaTUpperLimit = 900;
 const reactorDeltaTLowerLimit = 100;
-const reactorDeltaTMin = 00;
+const reactorDeltaTMin = -1000;
 
 const steamDeltaTMax = 1000;
 const steamDeltaTUpperLimit = 900;
 const steamDeltaTLowerLimit = 100;
-const steamDeltaTMin = 0;
+const steamDeltaTMin = -1000;
 
 // Website Init
 $(function() {
@@ -32,7 +32,7 @@ $('#clock').click(function(){
   if (!clockState) {
     console.log("Clock Start");
     clockInterval = setInterval("updateAllFigures(reactorDeltaTChart, steamDeltaTChart)", 1000);
-    chartInterval = setInterval("updateChartHelperFunction(reactorDeltaTChart, steamDeltaTChart)", 2000)
+    chartInterval = setInterval("updateCharts(reactorDeltaTChart, steamDeltaTChart)", 2000)
     clockState = true;
   } else {
     console.log("Clock Stop")
@@ -43,8 +43,8 @@ $('#clock').click(function(){
 });
 
 $('#testApi').click(function(){
-  updateAllFigures(reactorDeltaTChart, steamDeltaTChart);
-  updateChartHelperFunction(reactorDeltaTChart, steamDeltaTChart);
+  reactorDeltaTChart.update();
+  steamDeltaTChart.update();
 });
 
 // Steam Knob
@@ -106,13 +106,9 @@ function updateSteamValue(newSteamValue) {
 //Charts
 function getDateTime() {
   var currentdate = new Date(); 
-  return datetime = currentdate.getDate() + "-"
-    + (currentdate.getMonth()+1)  + "-" 
-    + currentdate.getFullYear() + " "  
-    + currentdate.getHours() + ":"  
-    + currentdate.getMinutes() + ":" 
-    + currentdate.getSeconds() + "."
-    + currentdate.getMilliseconds();
+  console.log(currentdate)
+  datetime = "200-01-01T" + currentdate.getHours() + ":" + currentdate.getMinutes() + ":" + currentdate.getSeconds();
+  return datetime
 }
 
 function updateAllFigures(reactorTemperatureChart, steamTemperatureChart){
@@ -121,7 +117,6 @@ function updateAllFigures(reactorTemperatureChart, steamTemperatureChart){
     url: "http://127.0.0.1:5000",
     dataType: "json",
     success: function(response){
-      console.log(response)
       currentDateTime = getDateTime()
       reactorTemperatureChart.data.datasets[0].data[
         reactorTemperatureChart.data.datasets[0].data.length] 
@@ -129,13 +124,12 @@ function updateAllFigures(reactorTemperatureChart, steamTemperatureChart){
       steamTemperatureChart.data.datasets[0].data[
         steamTemperatureChart.data.datasets[0].data.length] 
         = {x: currentDateTime, y: response[0][21]};
-
       powerGauge.value = response[0][0]
     }
   });
 }
 
-function updateChartHelperFunction(reactor, steam) {
+function updateCharts(reactor, steam) {
   reactor.update('none');
   steam.update('none');
 }
@@ -258,7 +252,7 @@ function createSteamDeltaTChart() {
         x: {
           type: 'time',
           time: {
-            unit: 'millisecond',
+            unit: 'minute',
             displayFormats: {
               millisecond: 'mm:ss'
             }
