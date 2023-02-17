@@ -1,3 +1,6 @@
 pandas
+csv
+numpy
+simpy
 Flask
 flask-cors
