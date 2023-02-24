@@ -107,7 +107,7 @@ function updateSteamValue(newSteamValue) {
 function getDateTime() {
   var currentdate = new Date(); 
   console.log(currentdate)
-  datetime = "200-01-01T" + currentdate.getHours() + ":" + currentdate.getMinutes() + ":" + currentdate.getSeconds();
+  datetime = "2000-01-01T" + currentdate.getHours() + ":" + currentdate.getMinutes() + ":" + currentdate.getSeconds();
   return datetime
 }
 
@@ -172,7 +172,7 @@ function createReactorDeltaTChart() {
         x: {
           type: 'time',
           time: {
-            unit: 'millisecond',
+            unit: 'minute',
             displayFormats: {
               millisecond: 'mm:ss'
             }

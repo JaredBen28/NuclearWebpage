@@ -1,9 +1,14 @@
 # ToDo List
+
+## For next week
+* Finish API
+* Get Mychal's model working
+
+
 ## Cyber Range
-* Get website hosted (Appachi or something else)
+* ~~Get website hosted~~
 * Api flask, production mode
   * Look into ajax and vulnerabilites
-* Set up npm
 
 ## Delta T graph
 * Figure out the data transfer
@@ -14,10 +19,10 @@
 * ~~Fixed range for Y axis~~
 * ~~X axis the last X mins (The change is very slow, several percent per 10min)~~
 * ~~Need limit lines on graph~~
-* Should it always be active?
+* Should it always be active? -- Yes
 * https://codepen.io/jordanwillis/pen/bqaGRR
 
-## Change dial to steam 
+## Change dial to steam --> add to power demand
 * Clean up style
 * Make it clear what its for
 * Look into other packages
@@ -29,12 +34,8 @@
   * Boostrap
   * Fonts/Title/Text stuff
 
-## API
-* ~~Clean it up, make it overall work better~~
-
 ## JS files
 * Comment it out
-* ~~Make the functions overall better~~
 
 # Student Experience
 * Click button to change something on interface
