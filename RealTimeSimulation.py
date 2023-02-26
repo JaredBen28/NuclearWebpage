@@ -193,7 +193,7 @@ def xprime(env, interval):
         tp = 2
 
         # Flow Rates
-        Ws = msv
+        Ws = step(600,t,5,504)
 
         dWin = (-1/tp)*(Win) + Vp ;
         dVp = (-1/tp)*(Vp) + (Vref)
@@ -206,17 +206,11 @@ def xprime(env, interval):
         #Wfw = Wsc - 0.5*dLsc*As*psc
 
         #Turbine 
-        Power = 0.64*Wt
-        dWt = (-1/10)*Wt + (1/10)*Ws*(1192.9-975.7)
+        Power = (0.35*Wt)/1e6
+        dWt = (-1/10)*Wt + (1/10)*(Ws*(1192.9-975.7))
 
         #Condensor
         Qdot = Ws*(69.73-981.6)
-
-        # Pump  
-
-       
-
-        
 
         # Primary Side
         dTp1 = (Wp*cpp*(Tin - Tp1) - hpw*A_pw1*(Tp1 - Tw1))/(M_p1*cpp)
@@ -234,7 +228,6 @@ def xprime(env, interval):
         dTw5 = (hpw*A_pw1*(Tp5 -Tw5) - hws*A_ws1*(Tw5 -Tsc))/(M_w1*cpw)
         dTw6 = (hpw*A_pw1*(Tp6 -Tw6) - hws*A_ws1*(Tw6 -Tsc))/(M_w1*cpw)
         
-
         dPS = (Zss*(Wb - Ws)*R*((Ts1+458.67+Ts2+458.67)/(2*Mstm)))/(As*Ls)
         dWs = (Wso*(1 - Cst*(kc*(1-(Ps/Pset))+((kc*(1-Ps/Pset))/ts)))-Ws)/ts
         dPsc = (Wfw - Wdb - psc*As*dLsc)/(As*Ls*Ksc)
@@ -244,12 +237,8 @@ def xprime(env, interval):
         dTs1 = (hws*A_ws1*(Tw1 - Ts1) - (Ws*cps*(Ts2 - Ts1)))/(As*0.5*Ls*ps*cps)
         dTs2 = (hws*A_ws1*(Tw2 - Ts2) - (Ws*cps*(Tsat - Ts2)))/(As*0.5*Ls*ps*cps)
 
-
-        
-
-
         # Differential Matrix
-        xPrime = [dndt, dc1dt, dc2dt, dc3dt, dc4dt, dc5dt, dc6dt, dkdt, dTdt, dTp1, dTp2, dTp3, dTp4, dTp5, dTp6,dTw1, dTw2, dTw3, dTw4, dTw5, dTw6, dTs1, dTs2, dTsc, Wt, Power, dWin,dVp]
+        xPrime = [dndt, dc1dt, dc2dt, dc3dt, dc4dt, dc5dt, dc6dt, dkdt, dTdt, dTp1, dTp2, dTp3, dTp4, dTp5, dTp6,dTw1, dTw2, dTw3, dTw4, dTw5, dTw6, dTs1, dTs2, dTsc, dWt, Power, dWin, dVp]
 
 
         xMid = [    xCurrent[0] + interval * xPrime[0],
@@ -277,7 +266,7 @@ def xprime(env, interval):
                     xCurrent[22] + interval * xPrime[22],
                     xCurrent[23] + interval * xPrime[23],
                     xCurrent[24] + interval * xPrime[24],
-                    xCurrent[25],
+                    xPrime[25],
                     xCurrent[26] + interval * xPrime[26],
                     xCurrent[27] + interval * xPrime[27],                                                                    
                 ]
@@ -296,7 +285,7 @@ def xprime(env, interval):
 
 if __name__ == '__main__':
 
-    #xCurrent = [1, beta1/lam1, beta2/lam1, beta3/lam1, beta4/lam1, beta5/lam1,beta6/lam1,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,0,0]
+    xCurrent = [1, beta1/lam1, beta2/lam1, beta3/lam1, beta4/lam1, beta5/lam1,beta6/lam1,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,0,20,0,0]
     env = simpy.rt.RealtimeEnvironment()
     proc = env.process(xprime(env,0.001))
     
