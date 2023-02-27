@@ -16,17 +16,13 @@ def get():
         content = [content['control']]
         if content[0] == "": return jsonify({'response':'not valid'})
         np.array(content).tofile('control.txt', sep=",")
-        return jsonify({'response':'Mass Flow Changed', 'mfv': content})
+        return jsonify({'response':'Percentage Changed', 'Percentage': content})
    else:
         file = open("sample.csv", "r")
         data = list(csv.reader(file, delimiter=","))
         file.close()
-        resp = {
-            'power': 3, 
-            'coreTemp': data[0][7], 
-            'coolantTemp': 3
-        }
-        # return jsonify(resp)
+        if data == []: return 400
         return jsonify(data)
 if __name__ == '__main__':
     app.run(debug=True)
+    # app.run(host='0.0.0.0', port=5000)

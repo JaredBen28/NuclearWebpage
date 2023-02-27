@@ -4,59 +4,47 @@ var powerGauge;
 var reactorDeltaTChart;
 var steamDeltaTChart;
 
-const powerOutputMax = 65;
-const powerOutputUpperLimit = 50;
+const powerOutputMax = 700;
+const powerOutputUpperLimit = 600;
 const powerOutLowerLimit = 25;
-const powerOutputMin = 15;
+const powerOutputMin = 0;
 
-const reactorDeltaTMax = 1000;
-const reactorDeltaTUpperLimit = 900;
+const reactorDeltaTMax = 2000;
+const reactorDeltaTUpperLimit = 1900;
 const reactorDeltaTLowerLimit = 100;
-const reactorDeltaTMin = -1000;
+const reactorDeltaTMin = 0;
 
-const steamDeltaTMax = 1000;
-const steamDeltaTUpperLimit = 900;
+const steamDeltaTMax = 2000;
+const steamDeltaTUpperLimit = 1900;
 const steamDeltaTLowerLimit = 100;
-const steamDeltaTMin = -1000;
+const steamDeltaTMin = 0;
 
 // Website Init
 $(function() {
   createPowerOutputGauge();
   createReactorDeltaTChart();
   createSteamDeltaTChart();
-  createSteamKnob()
+  createControlKnob()
 });
 
-// Buttons on Website
-$('#clock').click(function(){
-  if (!clockState) {
-    console.log("Clock Start");
-    clockInterval = setInterval("updateAllFigures(reactorDeltaTChart, steamDeltaTChart)", 1000);
-    chartInterval = setInterval("updateCharts(reactorDeltaTChart, steamDeltaTChart)", 2000)
-    clockState = true;
-  } else {
-    console.log("Clock Stop")
-    clearInterval(clockInterval);
-    clearInterval(chartInterval)
-    clockState = false;
-  }
+$(document).ready(function(){
+  clockInterval = setInterval("updateAllFigures(reactorDeltaTChart, steamDeltaTChart)", 1000);
+  chartInterval = setInterval("updateCharts(reactorDeltaTChart, steamDeltaTChart)", 2000)
 });
 
-$('#testApi').click(function(){
-  reactorDeltaTChart.update();
-  steamDeltaTChart.update();
+$('#update').click(function(){
+  reactorDeltaTChart.update('none');
+  steamDeltaTChart.update('none');
 });
 
-// Steam Knob
-function createSteamKnob() {
+// Control Knob
+function createControlKnob() {
   $("#dial").knob({
     'min': 0,
     'max': 100,
-    'release' : function(v){ 
-      console.log(v)
-      updateSteamValue(v)
-    },
+    'release' : function(v){updateControlValue(v)},
     'width':"150",
+    'height':"150",
     'fgColor': "#222222",
     'bgColor': "#FFFFFF",
     'thickness':".2",
@@ -90,13 +78,13 @@ function createPowerOutputGauge() {
   powerGauge.draw();
 }
 
-function updateSteamValue(newSteamValue) {
+function updateControlValue(newControlValue) {
   $.ajax({
     type: "POST",
     url: "http://127.0.0.1:5000",
     contentType: "application/json; charset=utf-8",
     dataType: 'json',
-    data: JSON.stringify({control: newSteamValue}),
+    data: JSON.stringify({control: newControlValue}),
     success: function(response){
       console.log(response);
     }
@@ -105,10 +93,7 @@ function updateSteamValue(newSteamValue) {
 
 //Charts
 function getDateTime() {
-  var currentdate = new Date(); 
-  console.log(currentdate)
-  datetime = "2000-01-01T" + currentdate.getHours() + ":" + currentdate.getMinutes() + ":" + currentdate.getSeconds();
-  return datetime
+  return "2000-01-01T"+String(new Date()).split(" ")[4]
 }
 
 function updateAllFigures(reactorTemperatureChart, steamTemperatureChart){
@@ -117,6 +102,8 @@ function updateAllFigures(reactorTemperatureChart, steamTemperatureChart){
     url: "http://127.0.0.1:5000",
     dataType: "json",
     success: function(response){
+      console.log(response)
+      if (response.length == 0) {return}
       currentDateTime = getDateTime()
       reactorTemperatureChart.data.datasets[0].data[
         reactorTemperatureChart.data.datasets[0].data.length] 
@@ -206,6 +193,10 @@ function createReactorDeltaTChart() {
           font: {
             size: 18
           }
+        },
+        subtitle: {
+          display: true,
+          text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
         }
       }
     },
@@ -286,6 +277,10 @@ function createSteamDeltaTChart() {
           font: {
             size: 18
           }
+        },
+        subtitle: {
+          display: true,
+          text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
         }
       }
     },

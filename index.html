@@ -29,7 +29,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-moment/1.0.1/chartjs-adapter-moment.js" integrity="sha512-OJ2EK2V/D4WNwwE2T9lWldfEJKnuvW5d4XEMb45oIXUoVKGkX03Xg8Q7p/tYxKgBf5iLjQPqTjfpTHu6DOKOPA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   </head>
 
-
   <body>
     <header class="container-fluid text-center"><h1>Metrics!</h1></header>
 
@@ -38,10 +37,13 @@
         <div class="col-lg-3">
           <div class="row">
             <div>
-              <button id="clock">Clock</button>
-              <button id="testApi">Test API</button>
+              <button id="update">Force all charts to update</button>
             </div>
-            <div><input type="text" value="100" id="dial"></div>
+            <div>
+              <p>Change value below to change the power demanded</p>
+              <input type="text" value="100" id="dial">
+              <p style="font-size: .75rem;">defaults to 100 on page refresh</p>
+            </div>
           </div>
 
           <div class="row">
@@ -50,8 +52,13 @@
         </div>
 
         <div class="col-lg-9">
-          <div class="row chart"><canvas id="reactorTemperatureChart"></canvas></div>
-          <div class="row chart"><canvas id="steamTemperatureChart"></canvas></div>
+          <div class="row chart">
+            <canvas id="reactorTemperatureChart"></canvas>
+          </div>
+          <br>
+          <div class="row chart">
+            <canvas id="steamTemperatureChart"></canvas>
+          </div>
         </div>
       </div>
     </div>

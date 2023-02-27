@@ -2,7 +2,7 @@
 
 ## For next week
 * Finish API
-* Get Mychal's model working
+* ~~Get Mychal's model working~~
 
 
 ## Cyber Range

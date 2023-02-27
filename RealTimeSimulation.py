@@ -2,9 +2,6 @@
 
 # Libary Importations
 import numpy as np
-import matplotlib.pyplot as plt 
-import csv
-import time
 import simpy
 import math
 
@@ -117,7 +114,7 @@ def xprime(env, interval):
     while True:
         global xCurrent
        
-        c = open("Control.csv", "r")
+        c = open("control.txt", "r")
         msv = float(c.read())
         c.close()
                 
@@ -195,7 +192,7 @@ def xprime(env, interval):
         # Flow Rates
         Ws = step(600,t,5,504)
 
-        dWin = (-1/tp)*(Win) + Vp ;
+        dWin = (-1/tp)*(Win) + Vp
         dVp = (-1/tp)*(Vp) + (Vref)
         Wfw = (dWin)/(69.73-72.69)
 
