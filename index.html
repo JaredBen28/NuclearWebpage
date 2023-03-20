@@ -36,16 +36,11 @@
       <div class="row content">
         <div class="col-lg-3">
           <div class="row">
-            <div>
-              <button id="update">Force all charts to update</button>
-            </div>
-            <div>
-              <p>Change value below to change the power demanded</p>
-              <input type="text" value="100" id="dial">
-              <p style="font-size: .75rem;">defaults to 100 on page refresh</p>
-            </div>
+            <p id="activeSim" style="font-size: 2em;">Checking Simulation</p>
           </div>
-
+          <div>
+            <p id="powerControlPercent" style="font-size: 1.5em;">Power Control Value is at:</p>
+          </div>
           <div class="row">
             <canvas id="power"></canvas>
           </div>

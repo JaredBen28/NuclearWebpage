@@ -2,6 +2,7 @@
 import numpy as np
 import simpy
 import math
+import time
 
 sampleRate = 0
 
@@ -272,9 +273,10 @@ def xprime(env, interval):
         if sampleRate <= 200:
             sampleRate += 1  
         else:
-            sampleRate = 0
-            print(xCurrent)
-            np.array(xCurrent).tofile('sample.csv', sep=",")
+            sampleRate = 0            
+            sample = np.array(xCurrent)
+            sample = np.append(sample, int(time.time_ns()))
+            sample.tofile('sample.csv', sep=",")
         yield env.timeout(interval) 
         
 

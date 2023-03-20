@@ -1,4 +1,4 @@
-var clockInterval, chartInterval;
+var clockInterval, chartInterval, simInterval;
 var clockState = false;
 var powerGauge;
 var reactorDeltaTChart;
@@ -19,17 +19,25 @@ const steamDeltaTUpperLimit = 1900;
 const steamDeltaTLowerLimit = 100;
 const steamDeltaTMin = 0;
 
+const skipped = (ctx, value) => ctx.p0.skip || ctx.p1.skip ? value : undefined;
+
+var activeSim;
+var lastTimestamp = 0;
+
 // Website Init
 $(function() {
   createPowerOutputGauge();
   createReactorDeltaTChart();
   createSteamDeltaTChart();
-  createControlKnob()
+  storeActiveSim();
+  updateAllFigures(reactorDeltaTChart, steamDeltaTChart);
 });
+
 
 $(document).ready(function(){
   clockInterval = setInterval("updateAllFigures(reactorDeltaTChart, steamDeltaTChart)", 1000);
-  chartInterval = setInterval("updateCharts(reactorDeltaTChart, steamDeltaTChart)", 2000)
+  chartInterval = setInterval("updateCharts(reactorDeltaTChart, steamDeltaTChart)", 2000);
+  simInterval = setInterval("simulation()", 2000)
 });
 
 $('#update').click(function(){
@@ -37,20 +45,17 @@ $('#update').click(function(){
   steamDeltaTChart.update('none');
 });
 
-// Control Knob
-function createControlKnob() {
-  $("#dial").knob({
-    'min': 0,
-    'max': 100,
-    'release' : function(v){updateControlValue(v)},
-    'width':"150",
-    'height':"150",
-    'fgColor': "#222222",
-    'bgColor': "#FFFFFF",
-    'thickness':".2",
-    'angleOffset':"180",
-    'displayPrevious': true,
-  });
+function simulation() {
+  if (activeSim) {
+    $('#activeSim').text('Simulation is Active');
+    $('#activeSim').css('color', 'green');
+    // $('#powerControlPercent').css('visibility', 'visible');
+  } else {
+    $('#activeSim').text('Simulation is Inactive');
+    $('#activeSim').css('color', 'red');
+    // $('#powerControlPercent').css('visibility', 'hidden');
+  }
+  getControlValue()
 }
 
 // Power Output Gauge
@@ -78,15 +83,14 @@ function createPowerOutputGauge() {
   powerGauge.draw();
 }
 
-function updateControlValue(newControlValue) {
+function getControlValue() {
   $.ajax({
-    type: "POST",
-    url: "http://127.0.0.1:5000",
-    contentType: "application/json; charset=utf-8",
-    dataType: 'json',
-    data: JSON.stringify({control: newControlValue}),
+    type: "GET",
+    url: "http://127.0.0.1:5000/powerControl",
+    dataType: "json",
     success: function(response){
-      console.log(response);
+      // console.log(response);
+      $('#powerControlPercent').text('Power Control Value is at: ' + response + '%')
     }
   });
 }
@@ -94,6 +98,18 @@ function updateControlValue(newControlValue) {
 //Charts
 function getDateTime() {
   return "2000-01-01T"+String(new Date()).split(" ")[4]
+}
+
+function storeActiveSim(){
+  $.ajax({
+    type: "GET",
+    url: "http://127.0.0.1:5000",
+    dataType: "json",
+    success: function(response){
+      timestamp = response[0][28];
+      console.log(timestamp);
+    }
+  });
 }
 
 function updateAllFigures(reactorTemperatureChart, steamTemperatureChart){
@@ -105,13 +121,23 @@ function updateAllFigures(reactorTemperatureChart, steamTemperatureChart){
       console.log(response)
       if (response.length == 0) {return}
       currentDateTime = getDateTime()
-      reactorTemperatureChart.data.datasets[0].data[
-        reactorTemperatureChart.data.datasets[0].data.length] 
-        = {x: currentDateTime, y: response[0][8]};
-      steamTemperatureChart.data.datasets[0].data[
-        steamTemperatureChart.data.datasets[0].data.length] 
-        = {x: currentDateTime, y: response[0][21]};
-      powerGauge.value = response[0][0]
+      timestamp = response[0][28];
+      if (timestamp == lastTimestamp) {
+        activeSim = false;
+        powerGauge.value = 0;
+        reactorTemperatureChart.data.datasets[0].data[reactorTemperatureChart.data.datasets[0].data.length] 
+          = {x: null, y: response[0][8]};
+        steamTemperatureChart.data.datasets[0].data[steamTemperatureChart.data.datasets[0].data.length] 
+          = {x: null, y: response[0][21]};
+      } else {
+        activeSim = true;
+        powerGauge.value = response[0][0];
+        reactorTemperatureChart.data.datasets[0].data[reactorTemperatureChart.data.datasets[0].data.length] 
+          = {x: currentDateTime, y: response[0][8]};
+        steamTemperatureChart.data.datasets[0].data[steamTemperatureChart.data.datasets[0].data.length] 
+          = {x: currentDateTime, y: response[0][21]};
+      };
+      lastTimestamp = timestamp;
     }
   });
 }
@@ -145,7 +171,10 @@ function createReactorDeltaTChart() {
       datasets: [{
         data: null,
         label: "Temperature",
-        fill: false
+        fill: false,
+        segment: {
+          borderColor: ctx => skipped(ctx, 'rgb(0,0,0,0.2)')
+        },
       }]
     },
     options: {
@@ -229,7 +258,10 @@ function createSteamDeltaTChart() {
       datasets: [{
         data: null,
         label: "Temperature",
-        fill: false
+        fill: false,
+        segment: {
+          borderColor: ctx => skipped(ctx, 'rgb(0,0,0,0.2)')
+        }
       }]
     },
     options: {
