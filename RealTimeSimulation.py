@@ -2,6 +2,9 @@
 
 # Libary Importations
 import numpy as np
+import matplotlib.pyplot as plt 
+import csv
+import time
 import simpy
 import math
 
@@ -15,7 +18,10 @@ def step(magnitude, time, delay, initial):
         
     return x
 
-# Reactor Coeffiecents 
+# Imperial Units 
+
+# Point Kinematic Equations 
+beta = 0.0067
 beta1 = 2.432e-4
 beta2 = 1.3632e-3
 beta3 = 1.2032e-03
@@ -30,13 +36,58 @@ lam4 = 0.311
 lam5 = 1.40
 lam6 = 3.87
 
-alpha = 0.01
-tau = 1
+MPT = 0.0001 # seconds mean prompt time
+
+
+# Core parameter Models
+Lfuel = 7.9
+N = 18216
+Nassembly = 69
+Ntotal = 19941
+Nfuel = 18216
+ODbarrel = 6.701
+ODclad = 0.0312
+ODpellet = 0.0269
+density_coolant = 44.01
+density_UO2 = 658.2
+Passembly = 0.705
+Pfuel = 0.0413
+
+fuel_mass = 53850.5
+mass_core = 6898.3 
+Afc = 14120.6
+Afc1 = 7060.3
+Afc2 = 7060.3
+cpc = 1.376
+cpf = 0.059
+f = 0.97
+mc1 = 3449.1
+mc2 = 3449.1
+Tf = 962.672
+Tfo = 962.741
+Ufc = 0.0909
+Wc = 8333.3
+
+
+# Nominal Temps (Farenheit)
+theta1o = 586.3
+theta2o = 608.0
+Tfo = 608.0
+
+# Nominal Power 
+Po = 502343
+no = 3500
+
+# reactivity coeffs
+ac = -0.0002
+af = -0.165e-05
+
+# Controller Parameters
 K = 1
 Kp = 0.3
 Ki = 0.01
-Tc = -1
-gamma = 1
+alpha = 0.01
+
 
 # Coeffiecents of the OTSG 
 Kb = -0.000053
@@ -114,9 +165,15 @@ def xprime(env, interval):
     while True:
         global xCurrent
        
-        c = open("control.txt", "r")
-        msv = float(c.read())
-        c.close()
+        c1 = open("coolantPump.txt", "r")
+        coolantPump = float(c1.read())
+
+        c2 = open("steamDemand.txt", "r")
+        steamDemand = float(c2.read())
+       
+        c3 = open('feedwaterPump.txt', "r")
+        feedwaterPump = float(c3.read())
+        
                 
         #assigning their states to a columns in the matrix 
         t = env.now
@@ -129,53 +186,31 @@ def xprime(env, interval):
         C5 = xCurrent[5]
         C6 = xCurrent[6]
         k = xCurrent[7]
-        Tin = xCurrent[8]
-        Tp1 = xCurrent[9]
-        Tp2 = xCurrent[10]
-        Tp3 = xCurrent[11]
-        Tp4 = xCurrent[12]
-        Tp5 = xCurrent[13]
-        Tp6 = xCurrent[14]
-        Tw1 = xCurrent[15]
-        Tw2 = xCurrent[16]
-        Tw3 = xCurrent[17]
-        Tw4 = xCurrent[18]
-        Tw5 = xCurrent[19]
-        Tw6 = xCurrent[20]
-        Ts1 = xCurrent[21]
-        Ts2 = xCurrent[22]
-        Tsc = xCurrent[23]
-        Wt = xCurrent[24]
-        Power = xCurrent[25]
-        Win = xCurrent[26]
-        Vp = xCurrent[27]
+        Tfuel = xCurrent[8] #going into the Steam Generator, Hot Leg 
+        theta1 = xCurrent[9]
+        theta2 = xCurrent[10]
 
-        Tc = 0
-        
-        
-        Tref = 608
+        Tp1 = xCurrent[11]
+        Tp2 = xCurrent[12]
+        Tp3 = xCurrent[13]
+        Tp4 = xCurrent[14]
+        Tp5 = xCurrent[15]
+        Tp6 = xCurrent[16] # going into Nuclear reactor, Cold Leg
+        Tw1 = xCurrent[17]
+        Tw2 = xCurrent[18]
+        Tw3 = xCurrent[19]
+        Tw4 = xCurrent[20]
+        Tw5 = xCurrent[21]
+        Tw6 = xCurrent[22]
+        Ts1 = xCurrent[23]
+        Ts2 = xCurrent[24]
+        Tsc = xCurrent[25]
 
-        Tavg = 0.5*(Tin + Tp6)
-        error = Tref - Tavg
-        
 
-        #Reactivity dependent on Temperature
-        rho_f = alpha*(Tavg-Tref)
-        rho = -alpha*(Tavg)+ Kp*(error) + Ki*k
-        
-        # Point Kinetics Equations
-        dndt = (rho - beta1)*n + C1*lam1 + C2*lam1 + C3*lam1 + C4*lam1 + C5*lam1 + C6*lam1 
-        dc1dt = beta1*n - lam1*C1
-        dc2dt = beta2*n - lam1*C2
-        dc3dt = beta3*n - lam1*C3
-        dc4dt = beta4*n - lam1*C4
-        dc5dt = beta5*n - lam1*C5
-        dc6dt = beta6*n - lam1*C6
-        dkdt = Tref - Tavg
-        #dTdt = -Tin/tau + K*n + Tc
-        dTdt = K*n - gamma*(Tavg - Tp6)
-        
-        # OTSG Model
+        Torque = xCurrent[26]
+        Power = xCurrent[27]
+        Win = xCurrent[28]
+        Vp = xCurrent[29]
 
         A_pw1 = (N*(math.pi)*Dit*0.5*Ls)
         M_p1 = (N*math.pi*(Dit**2)*0.125*Ls*pp)
@@ -183,16 +218,42 @@ def xprime(env, interval):
         M_w1 = (N*math.pi*((Dot**2)-(Dit**2))*0.125*Ls*pw)
 
 
+        rho = af*Tfuel + ac*0.5*((theta1+theta2) - (theta1o + theta2o))
+        thetaAvg = (theta1 + theta2)/2
+        Tavgo = 547 
+        Tinlet = 500
+
+        f = 0.97
+        Wc = coolantPump
+        Tfuelo = 608
+   
+        rho_c = Kp*(Tavgo - thetaAvg) + Ki*(k)
+        rho = af*(Tfuel - Tfuelo) + 0.5*ac*(theta1 - theta1o) + 0.5*ac*(theta2 - theta2o) + rho_c
+
+        dndt =  (rho/MPT) - (beta/MPT)*n + C1*lam1 + C2*lam2 + C3*lam3 + C4*lam4 + C5*lam5 + C6*lam6
+        dc1dt = (beta1/MPT)*(n) - lam1*C1
+        dc2dt = (beta2/MPT)*(n) - lam2*C2
+        dc3dt = (beta3/MPT)*(n) - lam3*C3
+        dc4dt = (beta4/MPT)*(n) - lam4*C4
+        dc5dt = (beta5/MPT)*(n) - lam5*C5
+        dc6dt = (beta6/MPT)*(n) - lam6*C6
+        dkdt = Tavgo - thetaAvg
+
+
+        dTfuel = (f*no*n + (Ufc*Afc)*(Tfuel - thetaAvg))/(fuel_mass*cpf)
+        dtheta1 = (Wc*cpc*(Tinlet - theta1) + ((Ufc*Afc)/2)*(Tfuel - theta1) + (1-f)*no*n)/(mc1*cpc)
+        dtheta2 = (Wc*cpc*(theta1 - theta2) + ((Ufc*Afc)/2)*(Tfuel - theta1) + (1-f)*no*n)/(mc2*cpc)
+        
         dLsc = 0.2
         dLs = 0.2
-
         Vref = 10
         tp = 2
 
         # Flow Rates
-        Ws = step(600,t,5,504)
+        #Ws = step(504, t, 2 , 504)
+        Ws = steamDemand
 
-        dWin = (-1/tp)*(Win) + Vp
+        dWin = (-1/tp)*(Win) + Vp ;
         dVp = (-1/tp)*(Vp) + (Vref)
         Wfw = (dWin)/(69.73-72.69)
 
@@ -203,14 +264,18 @@ def xprime(env, interval):
         #Wfw = Wsc - 0.5*dLsc*As*psc
 
         #Turbine 
-        Power = (0.35*Wt)/1e6
-        dWt = (-1/10)*Wt + (1/10)*(Ws*(1192.9-975.7))
+        speed = 1800 #rpm
+        Power = speed*Torque
+        dTq = (-1/10)*Torque + (1/10)*Ws*(2748)
 
         #Condensor
         Qdot = Ws*(69.73-981.6)
 
+
+        '''Once Through Steam Generator Model '''
+
         # Primary Side
-        dTp1 = (Wp*cpp*(Tin - Tp1) - hpw*A_pw1*(Tp1 - Tw1))/(M_p1*cpp)
+        dTp1 = (Wp*cpp*(theta2 - Tp1) - hpw*A_pw1*(Tp1 - Tw1))/(M_p1*cpp)
         dTp2 = (Wp*cpp*(Tp1 - Tp2) - hpw*A_pw1*(Tp2 - Tw2))/(M_p1*cpp)
         dTp3 = (Wp*cpp*(Tp2 - Tp3) - hpw*A_pw1*(Tp3 -Tw3))/(M_p1*cpp)
         dTp4 = (Wp*cpp*(Tp3 - Tp4) - hpw*A_pw1*(Tp4 -Tw4))/(M_p1*cpp)
@@ -235,7 +300,7 @@ def xprime(env, interval):
         dTs2 = (hws*A_ws1*(Tw2 - Ts2) - (Ws*cps*(Tsat - Ts2)))/(As*0.5*Ls*ps*cps)
 
         # Differential Matrix
-        xPrime = [dndt, dc1dt, dc2dt, dc3dt, dc4dt, dc5dt, dc6dt, dkdt, dTdt, dTp1, dTp2, dTp3, dTp4, dTp5, dTp6,dTw1, dTw2, dTw3, dTw4, dTw5, dTw6, dTs1, dTs2, dTsc, dWt, Power, dWin, dVp]
+        xPrime = [dndt, dc1dt, dc2dt, dc3dt, dc4dt, dc5dt, dc6dt, dkdt, dTfuel, dtheta1, dtheta2, dTp1, dTp2, dTp3, dTp4, dTp5, dTp6,dTw1, dTw2, dTw3, dTw4, dTw5, dTw6, dTs1, dTs2, dTsc, dTq, Power, dWin, dVp]
 
 
         xMid = [    xCurrent[0] + interval * xPrime[0],
@@ -249,7 +314,7 @@ def xprime(env, interval):
                     xCurrent[8] + interval * xPrime[8],
                     xCurrent[9] + interval * xPrime[9],
                     xCurrent[10] + interval * xPrime[10],
-                    xCurrent[11] + interval * xPrime[13],
+                    xCurrent[11] + interval * xPrime[11],
                     xCurrent[12] + interval * xPrime[12],
                     xCurrent[13] + interval * xPrime[13],
                     xCurrent[14] + interval * xPrime[14],
@@ -263,15 +328,19 @@ def xprime(env, interval):
                     xCurrent[22] + interval * xPrime[22],
                     xCurrent[23] + interval * xPrime[23],
                     xCurrent[24] + interval * xPrime[24],
-                    xPrime[25],
+                    xCurrent[25] + interval * xPrime[25],
                     xCurrent[26] + interval * xPrime[26],
-                    xCurrent[27] + interval * xPrime[27],                                                                    
+                    xCurrent[27]/1e6, 
+                    xCurrent[28] + interval * xPrime[28],
+                    xCurrent[29] + interval * xPrime[29]
+                        
+                                                                                  
                 ]
         
        
         xCurrent = xMid
-
-         
+        
+               
                
         f = open("sample.csv", "a")
         f.write(str(xCurrent).replace("[", "").replace("]", ""))
@@ -281,8 +350,8 @@ def xprime(env, interval):
         
 
 if __name__ == '__main__':
-
-    xCurrent = [1, beta1/lam1, beta2/lam1, beta3/lam1, beta4/lam1, beta5/lam1,beta6/lam1,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,600,0,20,0,0]
+    #xPrime = [dndt, dc1dt, dc2dt, dc3dt, dc4dt, dc5dt, dc6dt, dkdt, dTfuel,dtheta1, dtheta2, dTin, Pth, dTp1, dTp2, dTp3, dTp4, dTp5, dTp6,dTw1, dTw2, dTw3, dTw4, dTw5, dTw6, dTs1, dTs2, dTsc, dTq, Power, dWin, dVp]
+    xCurrent = [1, beta1/lam1, beta2/lam2, beta3/lam3, beta4/lam4, beta5/lam5, beta6/lam6, 0, 500,500,550,Po,600,600,600,600,600,600,550,550,550,550,550,550,400,400,400,1000,0,30,0,0,0,0,0,0]
     env = simpy.rt.RealtimeEnvironment()
     proc = env.process(xprime(env,0.001))
     
