@@ -3,6 +3,7 @@ var clockState = false;
 var powerGauge;
 var reactorDeltaTChart;
 var steamDeltaTChart;
+var power2Gauge;
 
 const powerOutputMax = 700;
 const powerOutputUpperLimit = 600;
@@ -29,6 +30,7 @@ $(function() {
   createPowerOutputGauge();
   createReactorDeltaTChart();
   createSteamDeltaTChart();
+  createPower2Gauge();
   storeActiveSim();
   updateAllFigures(reactorDeltaTChart, steamDeltaTChart);
 });
@@ -38,11 +40,6 @@ $(document).ready(function(){
   clockInterval = setInterval("updateAllFigures(reactorDeltaTChart, steamDeltaTChart)", 1000);
   chartInterval = setInterval("updateCharts(reactorDeltaTChart, steamDeltaTChart)", 2000);
   simInterval = setInterval("simulation()", 2000)
-});
-
-$('#update').click(function(){
-  reactorDeltaTChart.update('none');
-  steamDeltaTChart.update('none');
 });
 
 function simulation() {
@@ -124,14 +121,15 @@ function updateAllFigures(reactorTemperatureChart, steamTemperatureChart){
       timestamp = response[0][28];
       if (timestamp == lastTimestamp) {
         activeSim = false;
-        powerGauge.value = 0;
+        powerGauge.update({value: 0});
         reactorTemperatureChart.data.datasets[0].data[reactorTemperatureChart.data.datasets[0].data.length] 
           = {x: null, y: response[0][8]};
         steamTemperatureChart.data.datasets[0].data[steamTemperatureChart.data.datasets[0].data.length] 
           = {x: null, y: response[0][21]};
       } else {
         activeSim = true;
-        powerGauge.value = response[0][0];
+        // powerGauge.value = response[0][0];
+        powerGauge.update({value: response[0][0]});
         reactorTemperatureChart.data.datasets[0].data[reactorTemperatureChart.data.datasets[0].data.length] 
           = {x: currentDateTime, y: response[0][8]};
         steamTemperatureChart.data.datasets[0].data[steamTemperatureChart.data.datasets[0].data.length] 
@@ -319,4 +317,78 @@ function createSteamDeltaTChart() {
     plugins: [horizontalArbitraryLine]
   };
   steamDeltaTChart = new Chart(ctx, config);
+}
+
+
+
+function createPower2Gauge() {
+  const ctx = document.getElementById("power2");
+  console.log(ctx)
+  const gaugeNeedle = {
+    id: 'gaugeNeedle',
+    afterDatasetDraw(chart, args, options) {
+      const {ctx, config, data, chartArea: {top, bottom, left, right, width, height}} = chart; 
+      ctx.save();
+      const needleValue = data.datasets[0].needleValue;
+      const dataTotal = data.datasets[0].data.reduce((a,b) => a + b, 0);
+      const angle = Math.PI * (1 / dataTotal * needleValue * Math.PI);
+
+      const cx = width / 2;
+      const cy = chart._metasets[0].data[0].y;
+
+      // needle
+      ctx.translate(cx, cy);
+      ctx.rotate(angle);
+      ctx.beginPath();
+      ctx.moveTo(0, -2);
+      ctx.lineTo(height - (ctx.canvas.offsetTop+ 5), 0);
+      ctx.lineTo(0, 2);
+      ctx.fillStyle = options.needleColor;
+      ctx.fill();
+      ctx.restore();
+
+      // dot 
+      ctx.beginPath();
+      ctx.arc(cx, cy, 5, 0, 10);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.font = '2em Arial';
+      ctx.fillStyle = options.needleColor;
+      ctx.fillText('Power Output: ' + needleValue + 'W', cx, cy + 50);
+      ctx.textAlign = 'center';
+      ctx.restore();
+    }
+  }
+  const config = {
+    type: 'doughnut',
+    data: {
+      datasets: [{
+        data: [0, 10, 90, 100],
+        label: "Temperature",
+        backgroundColor: [
+          'green',
+          'red',
+          'green'
+        ],
+        needleValue: 60,
+        borderColor: 'white',
+        borderWidth: 2,
+        cutout: '95%',
+        circumference: 180,
+        rotation: 270,
+        borderRadius: 5,
+      }]
+    },
+    options: {
+      plugins: {
+        legend: {display: false},
+        gaugeNeedle: {
+          needleColor: '#444'
+        }
+      }
+    },
+    plugins: [gaugeNeedle]
+  };
+  power2Gauge = new Chart(ctx, config);
 }
