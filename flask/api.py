@@ -17,14 +17,15 @@ def get():
      if data == []: return 400
      return jsonify(data)
 
-@app.route("/powerControl", methods=['GET'])
+@app.route("/control", methods=['GET'])
 @cross_origin()
 def getControlPower():
-     file = open("powerControl.txt", "r")
+     file = open("steamDemand.txt", "r")
      data = file.read()
      file.close()
      return jsonify(data)
 
+# Switch on VM for external access
 if __name__ == '__main__':
     app.run(debug=True)
     # app.run(host='0.0.0.0', port=5000)
