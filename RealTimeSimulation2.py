@@ -1,19 +1,16 @@
 #%%
+'''
+    This Model was created as a part of the PCAG Project at the University of Pittsburgh under the direction of Dr. Daniel Cole and Dr. Ibrahim Ahmed.
+    This model was created using reference material fron Dynamics and Control of Nuclear Reactors
+    The OTSG Model was created using "Dynamic Modeling of a Small Modular Reactor for Control and
+    Monitoring "
 
+'''
 # Libary Importations
 import numpy as np
 import simpy
 import math
 
-
-def step(magnitude, time, delay, initial):
-    
-    if time > delay:
-        x = magnitude
-    else:
-        x = initial
-        
-    return x
 
 # Core parameter Models
 
@@ -24,7 +21,7 @@ Afc1 = 7060.3
 Afc2 = 7060.3
 cpc = 1.376
 cpf = 0.059
-f = 0.97
+fp = 0.97
 mc1 = 3449.1
 mc2 = 3449.1
 Tf = 962.672
@@ -55,11 +52,12 @@ MPT = 1.79e-4 # seconds mean prompt time
 theta1o = 586.3
 theta2o = 608.0
 Tfuelo = 608.0
+Tavgo = 547 
 
 # Nominal Power 
 Po = 502343 #BTU/s
 no = 3450
-ratedPower = 181   # rated electric power at full load
+ratedPower = 61   # rated electric power at full load
 
 # reactivity coeffs
 ac = -0.0002
@@ -69,8 +67,6 @@ af = -0.165e-5
 K = 1
 Kp = 0.1
 Ki = 0.01
-
-
 
 # Coeffiecents of the OTSG 
 Kb = -0.000053
@@ -163,52 +159,68 @@ def reactor_core(env, interval):
     
     while True:
         global xCurrent
+
+
+        c1 = open("coolantPump.txt", "r")
+        coolantPump = float(c1.read())
+
+        c2 = open("steamDemand.txt", "r")
+        steamDemand = float(c2.read())
        
-        f = 0.974
+        c3 = open('feedwaterPump.txt', "r")
+        feedwaterPump = float(c3.read())
+
+        c4 = open("TavgController.txt","r")
+        Tavgo = float(c4.read())
+        
         #assigning their states to a columns in the matrix 
        
         t = env.now
     
-        n = xCurrent[0]                 # A
-        C1 = xCurrent[1]                # B
-        C2 = xCurrent[2]                # C
-        C3 = xCurrent[3]                # D
-        C4 = xCurrent[4]                # E
-        C5 = xCurrent[5]                # F
-        C6 = xCurrent[6]            
-        k = xCurrent[7]
-        Tfuel = xCurrent[8]
-        theta1 = xCurrent[9]
-        theta2 = xCurrent[10]
+        n = xCurrent[0]                 # A in Excel, thermal Power
+        C1 = xCurrent[1]                # B in Excel, neutron group 1
+        C2 = xCurrent[2]                # C in Excel, neutron group 2
+        C3 = xCurrent[3]                # D in Excel, neutron group 3
+        C4 = xCurrent[4]                # E in Excel, neutron group 4
+        C5 = xCurrent[5]                # F in Excel, neutron group 5
+        C6 = xCurrent[6]                # G in Excel, neutron group 6
+        k = xCurrent[7]                 # H in Excel, error term, Tavg - Taverage reference
+        Tfuel = xCurrent[8]             # I in Excel, temperature of the feul in Farenheit
+        theta1 = xCurrent[9]            # J in Excel, temperature of the coolant node(cold, into node 2) 1 in Farenheit
+        theta2 = xCurrent[10]           # K in Excel, temperature of the coolant node 2 (hot, into OTSG) in Farenheit
 
-        Tp1 = xCurrent[11]             # temperature in primary node 1  
-        Tp2 = xCurrent[12]             # temperature in primary node 2  
-        Tp3 = xCurrent[13]             # temperature in primary node 3  
-        Tp4 = xCurrent[14]             # temperature in primary node 4 
-        Tp5 = xCurrent[15]             # temperature in primary node 5 
-        Tp6 = xCurrent[16]             # temperature in primary node 6, going into Nuclear reactor, Cold Leg
-        Tw1 = xCurrent[17]             # temperature in wall node 1  
-        Tw2 = xCurrent[18]             # temperature in wall node 2 
-        Tw3 = xCurrent[19]             # temperature in wall node 3   
-        Tw4 = xCurrent[20]             # temperature in wall node 4 
-        Tw5 = xCurrent[21]             # temperature in wall node 5 
-        Tw6 = xCurrent[22]             # temperature in wall node 6 
+        Tp1 = xCurrent[11]              # L in Excel, temperature in primary node 1  
+        Tp2 = xCurrent[12]              # M in Excel, temperature in primary node 2  
+        Tp3 = xCurrent[13]              # N in Excel, temperature in primary node 3  
+        Tp4 = xCurrent[14]              # O in Excel, temperature in primary node 4 
+        Tp5 = xCurrent[15]              # P in Excel, temperature in primary node 5 
+        Tp6 = xCurrent[16]              # Q in Excel, temperature in primary node 6, going into Nuclear reactor, Cold Leg
+        Tw1 = xCurrent[17]              # R in Excel, temperature in wall node 1  
+        Tw2 = xCurrent[18]              # S in Excel, temperature in wall node 2 
+        Tw3 = xCurrent[19]              # T in Excel, temperature in wall node 3   
+        Tw4 = xCurrent[20]              # U in Excel, temperature in wall node 4 
+        Tw5 = xCurrent[21]              # V in Excel, temperature in wall node 5 
+        Tw6 = xCurrent[22]              # W in Excel, temperature in wall node 6 
 
-        Ts1 = xCurrent[23]
-        Ts2 = xCurrent[24]
-        Torque = xCurrent[25]
-        Powerp = xCurrent[26]
-        percentPower = xCurrent[27]
-        Psat = xCurrent[28]
-        Tsat1 = xCurrent[29]
-        Tsc1 = xCurrent[30]
+        Ts1 = xCurrent[23]             # X in Excel, temperature of the superheated node 1 
+        Ts2 = xCurrent[24]             # Y in Excel, temperature of the superheated node 2
+        Torque = xCurrent[25]          # Z in Excel, torque of the turbine (lbf-ft)
+        Powerp = xCurrent[26]          # AA in Excel, Power from past time step
+        percentPower = xCurrent[27]    # AB in Excel, percentage fo power in the system before rated power
+        Psat = xCurrent[28]            # AC in Excel, saturation Pressure (in this model it is assumed to be constant)
+        Tsc = xCurrent[29]             # AD in Excel,  Subcooled Temperature in Farenheit
 
-        thetaAvg = (theta1 + theta2)/2
-        Tavgo = 547 
-        Tinlet = 400
+        thetaAvg = (theta1 + theta2)/2  # Average temperature in the coolant nodes
+                            
         
-        Wc = step(9000,t,10,8333)
-   
+        
+        # Coolant Flow
+        Wc = coolantPump
+
+        # Steam Flow
+        Ws = steamDemand
+
+
         # rho_c = Kp*(Tavgo - thetaAvg) + Ki*(k)
         rho = af*(Tfuel - Tfuelo) + 0.5*ac*(theta1 - theta1o) + 0.5*ac*(theta2 - theta2o) + Kp*(Tavgo - thetaAvg) + Ki*(k)
 
@@ -220,13 +232,13 @@ def reactor_core(env, interval):
         dc5dt = (beta5/MPT)*(n) - lam5*C5
         dc6dt = (beta6/MPT)*(n) - lam6*C6
         dkdt = Tavgo - thetaAvg
-        dTfuel = (f*Po*n + (Ufc*Afc)*(Tfuel - thetaAvg))/(fuel_mass*cpf)
-        dtheta1 = (Wc*cpc*(Tp6 - theta1) + ((Ufc*Afc)/2)*(Tfuel - theta1) + (1-f)*Po*n)/(mass_core*cpc)
-        dtheta2 = (Wc*cpc*(theta1 - theta2) + ((Ufc*Afc)/2)*(Tfuel - theta1) + (1-f)*Po*n)/(mass_core*cpc)
+        dTfuel = (fp*Po*n + (Ufc*Afc)*(Tfuel - thetaAvg))/(fuel_mass*cpf)
+        dtheta1 = (Wc*cpc*(Tp6 - theta1) + ((Ufc*Afc)/2)*(Tfuel - theta1) + (1-fp)*Po*n)/(mass_core*cpc)
+        dtheta2 = (Wc*cpc*(theta1 - theta2) + ((Ufc*Afc)/2)*(Tfuel - theta1) + (1-fp)*Po*n)/(mass_core*cpc)
 
         #Ts1 = 605.992
         #Ts2 = 594.981
-        Tsc = 524.892
+        #Tsc = 524.892
         Tsat = 559.079
 
         #Turbine 
@@ -243,10 +255,12 @@ def reactor_core(env, interval):
         dLb = 0.0033
         dLs = -0.0034
 
-        W12 = Ws - 0.5*dLs*As*ps
-        Wb = W12 - 0.5*dLs*As*ps
-        Wdb = Wb - dLsc*As*pb
-        Wsc = Wdb - 0.5*dLsc*As*psc
+        # Feedwater Flow from BOP
+        Wfw = feedwaterPump
+
+        Wsc = Wfw + 0.5*dLsc*As*psc
+        Wdb = Wsc + 0.5*dLsc*As*psc
+        Wb = Wdb + dLsc*As*pb
 
         Lsc = 0.1179*(decimalPower) + 2.5617
 
@@ -264,12 +278,11 @@ def reactor_core(env, interval):
         # Steam Pressure 
         dPS = (Zss*(Wb - Ws)*R*((Ts1+458.67+Ts2+458.67)/(2*Mstm)))/(As*Ls)
 
+
         # Feedwater Temperature
-        dPsat = (hwsc*Awsc*(Tw5 - Tsat) + 2*cpsc*(Wsc*Tsc - Wdb*Tsat) - As*psc*cpsc*(Tsat*dLsc))/(As*psc*cpsc*K1*Lsc)
-
-        Tsat1 = 98.645*(np.abs(Psat))**(1/4)
-
-                
+        # dPsat = (hwsc*Awsc*(Tw5 - Tsat1) + 2*cpsc*(Wsc*Tsc1 - Wdb*Tsat1) - As*psc*cpsc*(Tsat1*dLsc))/(As*psc*cpsc*K1*Lsc)
+        dPsat = 0.00
+  
         # Primary Side
         dTp1 = (Wc*cpp*(theta2 - Tp1) - hpw*Apw1*(Tp1 - Tw1))/(Mp1*cpp)
         dTp2 = (Wc*cpp*(Tp1 - Tp2) - hpw*Apw1*(Tp2 - Tw2))/(Mp1*cpp)
@@ -289,10 +302,10 @@ def reactor_core(env, interval):
         dTs1 = (hws*Aws1*(Tw1 - Ts1) - (Ws*cps*(Ts1 - Ts2)))/(As*0.5*Ls*ps*cps)
         dTs2 = (hws*Aws1*(Tw2 - Ts2) - (Ws*cps*(Ts2 - Tsat)))/(As*0.5*Ls*ps*cps)
 
-        dTsc = (hwsc*(math.pi)*Dot*0.5*Lsc*(Tw6-Tfw) + cpsc*(Wfw*Tfw - Wsc*Tsc1) + (1/778)*0.5*As*Lsc*dPsc - 0.5*Tfw*dLsc*As*psc*cpsc)/((0.5*Lsc*As*psc*cpsc))
+        dTsc = (hwsc*(math.pi)*Dot*0.5*Lsc*(Tw6-Tfw) + cpsc*(Wfw*Tfw - Wsc*Tsc) + (1/778)*0.5*As*Lsc*dPsc - 0.5*Tfw*dLsc*As*psc*cpsc)/((0.5*Lsc*As*psc*cpsc))
 
 
-        xPrime = [dndt, dc1dt, dc2dt, dc3dt, dc4dt, dc5dt, dc6dt, dkdt, dTfuel, dtheta1, dtheta2, dTp1, dTp2, dTp3, dTp4, dTp5, dTp6,dTw1, dTw2, dTw3, dTw4, dTw5, dTw6, dTs1, dTs2, dTq, Power, percentPower,dPsat, Tsat1, dTsc]
+        xPrime = [dndt, dc1dt, dc2dt, dc3dt, dc4dt, dc5dt, dc6dt, dkdt, dTfuel, dtheta1, dtheta2, dTp1, dTp2, dTp3, dTp4, dTp5, dTp6,dTw1, dTw2, dTw3, dTw4, dTw5, dTw6, dTs1, dTs2, dTq, Power, percentPower,dPsat, dTsc]
        
         xMid = [    xCurrent[0] + interval * xPrime[0],
                     xCurrent[1] + interval * xPrime[1],
@@ -323,26 +336,25 @@ def reactor_core(env, interval):
                     xPrime[26],
                     xPrime[27],
                     xCurrent[28] + interval * xPrime[28],
-                    xPrime[29],
-                    xCurrent[30] + interval * xPrime[30],
+                    xCurrent[29] + interval * xPrime[29],
                 ]
                    
             
         xCurrent = xMid    
-        print(xMid)
+        #print(xMid)
 
                
-        #f = open("ReactorTest.csv", "a")
-        #f.write(str(xCurrent).replace("[", "").replace("]", ""))
-        #f.write("\n")
-        #f.close()
+        f = open("ReactorTest.csv", "a")
+        f.write(str(xCurrent).replace("[", "").replace("]", ""))
+        f.write("\n")
+        f.close()
         
         yield env.timeout(interval) 
         
 
 if __name__ == '__main__':
     
-    xCurrent = [1, beta1/(lam1*MPT), beta2/(lam2*MPT), beta3/(lam3*MPT), beta4/(lam4*MPT), beta5/(lam5*MPT), beta6/(lam6*MPT),0,973.061,567,608,610.331,609.129,585.995,573.554,571.845,566.3,609.06,604.985,570.556,565.251,566.446,548.789,605.992,594.981,0,0,0,0,559.079,550] 
+    xCurrent = [1.0135, 180.631, 487.475, 119.885, 89.127, 6.865,0.946154,0,973.061,567,608,610.331,609.129,585.995,573.554,571.845,566.3,609.06,604.985,570.556,565.251,566.446,548.789,605.992,594.981,0,0,0,1136.58,550] 
     env = simpy.rt.RealtimeEnvironment(strict=False)
     proc = env.process(reactor_core(env,0.001))
     
