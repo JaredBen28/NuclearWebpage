@@ -150,7 +150,7 @@ function updateAllFigures(reactorTemperatureChart, H1TChart){
       console.log(response)
       if (response.length == 0) {return}
       currentDateTime = getDateTime()
-      timestamp = response[0][28];
+      console.log(response[0][30])
       if (timestamp == lastTimestamp) {
         activeSim = false;
         powerGauge.update({value: 0});
