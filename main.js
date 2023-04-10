@@ -3,6 +3,7 @@ var clockState = false;
 var powerGauge;
 var reactorDeltaTChart;
 var H1TDeltaTChart;
+var tempsChart;
 var reactorPowerGauge;
 
 const powerOutputMax = 60;
@@ -32,6 +33,7 @@ $(function() {
   createReactorPowerOutputGauge();
   createPowerOutputGauge();
 
+  createTempsChart();
   createReactorDeltaTChart();
   createH1TChart();
 
@@ -43,7 +45,7 @@ $(function() {
 
 $(document).ready(function(){
   clockInterval = setInterval("updateAllFigures(reactorDeltaTChart, H1TDeltaTChart)", 1000);
-  chartInterval = setInterval("updateCharts(reactorDeltaTChart, H1TDeltaTChart)", 2000);
+  chartInterval = setInterval("updateCharts(reactorDeltaTChart, H1TDeltaTChart, tempsChart)", 2000);
   simInterval = setInterval("simulation()", 2000)
 });
 
@@ -135,7 +137,7 @@ function storeActiveSim(){
     url: "http://127.0.0.1:5000",
     dataType: "json",
     success: function(response){
-      timestamp = response[0][28];
+      timestamp = response[0][30];
       console.log(timestamp);
     }
   });
@@ -150,37 +152,69 @@ function updateAllFigures(reactorTemperatureChart, H1TChart){
       console.log(response)
       if (response.length == 0) {return}
       currentDateTime = getDateTime()
-      console.log(response[0][30])
+      timestamp =response[0][30]
       if (timestamp == lastTimestamp) {
         activeSim = false;
         powerGauge.update({value: 0});
         reactorPowerGauge.update({value: 0});
-        reactorTemperatureChart.data.datasets[0].data[reactorTemperatureChart.data.datasets[0].data.length] 
-          = {x: null, y: response[0][8]};
-        H1TChart.data.datasets[0].data[H1TChart.data.datasets[0].data.length] 
-          = {x: null, y: response[0][21]};
+        reactorTemperatureChart.data.datasets[0].data
+        [reactorTemperatureChart.data.datasets[0].data.length] 
+          = {x: null, y: 0};
+
+        H1TChart.data.datasets[0].data
+        [H1TChart.data.datasets[0].data.length] 
+          = {x: null, y: 0};
+
+        tempsChart.data.datasets[0].data
+        [tempsChart.data.datasets[0].data.length]
+          = {x: null, y: 0};
+
+        tempsChart.data.datasets[1].data
+        [tempsChart.data.datasets[1].data.length]
+          = {x: null, y: 0};
+
+        tempsChart.data.datasets[2].data
+        [tempsChart.data.datasets[2].data.length] 
+          = {x: null, y: 0};
+
       } else {
         activeSim = true;
         // powerGauge.value = response[0][0];
         powerGauge.update({value: response[0][27]});
         reactorPowerGauge.update({value: response[0][0]})
-        tavg = (response[0][9]+response[0][10])/2
+        
         reactorTemperatureChart.data.datasets[0].data
         [reactorTemperatureChart.data.datasets[0].data.length] 
-          = {x: currentDateTime, y: tavg};
-        H1TChart.data.datasets[0].data[H1TChart.data.datasets[0].data.length] 
-          = {x: currentDateTime, y: response[0][10]};
-        $('#reactorTemp').text('Current reactor temperature: ' + response[0][8]);
+          = {x: currentDateTime, y: (parseFloat(response[0][9])+parseFloat(response[0][10]))/2};
+        
+        H1TChart.data.datasets[0].data
+        [H1TChart.data.datasets[0].data.length] 
+          = {x: currentDateTime, y: response[0][21]};
+        
+        $('#reactorTemp').text('Current reactor temperature: ' + (parseFloat(response[0][9])+parseFloat(response[0][10]))/2);
         $('#H1T').text('Current H1 temperature: ' + response[0][21]);
+
+        tempsChart.data.datasets[0].data
+        [tempsChart.data.datasets[0].data.length]
+          = {x: currentDateTime, y: response[0][10]};
+
+        tempsChart.data.datasets[1].data
+        [tempsChart.data.datasets[1].data.length]
+          = {x: currentDateTime, y: (parseFloat(response[0][9])+parseFloat(response[0][10]))/2};
+        
+          tempsChart.data.datasets[2].data
+        [tempsChart.data.datasets[2].data.length]
+          = {x: currentDateTime, y: response[0][9]};
       };
       lastTimestamp = timestamp;
     }
   });
 }
 
-function updateCharts(reactor, steam) {
+function updateCharts(reactor, steam, temps) {
   reactor.update('none');
   steam.update('none');
+  temps.update('none');
 }
 
 function createReactorDeltaTChart() {
@@ -337,7 +371,7 @@ function createH1TChart() {
       plugins: {
         title: {
           display: true,
-          text: "H1 Tempature Over Time",
+          text: "H1 Temperature Over Time",
           padding: {
             top: 10,
             bottom: 10
@@ -355,4 +389,114 @@ function createH1TChart() {
     plugins: [horizontalArbitraryLine]
   };
   H1TDeltaTChart = new Chart(ctx, config);
+}
+
+function createTempsChart() {
+  const ctx = document.getElementById("tempsChart");
+  const horizontalArbitraryLine = {
+    id: 'horizontalArbitraryLine',
+    beforeDraw(chart, args, options) {
+      const { ctx, chartArea: {top, right, bottom, left, width, height}, scales: {x, y} } = chart;
+      ctx.save();
+
+      ctx.strokeStyle = 'Red';
+      const upperLimit = y.getPixelForValue(H1TDeltaTUpperLimit)
+      const lowerLimit = y.getPixelForValue(H1TDeltaTLowerLimit)
+
+      ctx.strokeRect(left, upperLimit, width, 0)
+      ctx.strokeRect(left, lowerLimit, width, 0)
+
+    }
+  }
+
+  const config = {
+    type: 'line',
+    data: {
+      datasets: [{
+        data: null,
+        label: "hot temp",
+        fill: false,
+        borderColor: 'rgba(247,70,74,1)',
+        backgroundColor: 'rgba(247,70,74,0.2)',
+        segment: {
+          borderColor: ctx => skipped(ctx, 'rgb(0,0,0,0.2)')
+        }
+      },
+      {
+        data: null,
+        label: "avg temp",
+        fill: false,
+        borderColor: 'rgba(70,191,189,1)',
+        backgroundColor: 'rgba(70,191,189,0.2)',
+        segment: {
+          borderColor: ctx => skipped(ctx, 'rgb(0,0,0,0.2)')
+        }
+      },
+      {
+        data: null,
+        label: "cold temp",
+        fill: false,
+        borderColor: 'rgba(54,162,235,1)',
+        backgroundColor: 'rgba(54,162,235,0.2)',
+        segment: {
+          borderColor: ctx => skipped(ctx, 'rgb(0,0,0,0.2)')
+        }
+      }
+    ]
+    },
+    options: {
+      maintainAspectRatio: false,
+      elements: {
+        point: {
+          radius: .1,
+        }
+      },
+      scales: {
+        x: {
+          type: 'time',
+          time: {
+            unit: 'minute',
+            displayFormats: {
+              millisecond: 'mm:ss'
+            }
+          },
+          distribution: 'linear',
+          title: {
+            text: "Time in min:sec",
+            display: true
+          },
+          ticks: {
+            maxTicksLimit: 20
+          }
+        },
+        y: {
+          title: {
+            text: "Temp",
+            display: true
+          },
+          min: H1TDeltaTMin,
+          max: H1TDeltaTMax
+        }
+      },
+      plugins: {
+        title: {
+          display: true,
+          text: "Temperature Over Time",
+          padding: {
+            top: 10,
+            bottom: 10
+          },
+          font: {
+            size: 18
+          }
+        },
+        // subtitle: {
+        //   display: true,
+        //   text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+        // }
+      }
+    },
+    plugins: [horizontalArbitraryLine]
+  };
+  tempsChart = new Chart(ctx, config);
 }
