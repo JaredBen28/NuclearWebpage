@@ -5,20 +5,20 @@ var reactorDeltaTChart;
 var H1TDeltaTChart;
 var reactorPowerGauge;
 
-const powerOutputMax = 700;
-const powerOutputUpperLimit = 600;
-const powerOutLowerLimit = 25;
+const powerOutputMax = 60;
+const powerOutputUpperLimit = 50;
+const powerOutLowerLimit = 10;
 const powerOutputMin = 0;
 
-const reactorDeltaTMax = 2000;
-const reactorDeltaTUpperLimit = 1900;
-const reactorDeltaTLowerLimit = 100;
-const reactorDeltaTMin = 0;
+const reactorDeltaTMax = 1200;
+const reactorDeltaTUpperLimit = 1190;
+const reactorDeltaTLowerLimit = 210;
+const reactorDeltaTMin = 200;
 
-const H1TDeltaTMax = 2000;
-const H1TDeltaTUpperLimit = 1900;
-const H1TDeltaTLowerLimit = 100;
-const H1TDeltaTMin = 0;
+const H1TDeltaTMax = 1200;
+const H1TDeltaTUpperLimit = 1190;
+const H1TDeltaTLowerLimit = 210;
+const H1TDeltaTMin = 200;
 
 const skipped = (ctx, value) => ctx.p0.skip || ctx.p1.skip ? value : undefined;
 
@@ -162,12 +162,14 @@ function updateAllFigures(reactorTemperatureChart, H1TChart){
       } else {
         activeSim = true;
         // powerGauge.value = response[0][0];
-        powerGauge.update({value: response[0][0]});
-        reactorPowerGauge.update({value: response[0][1]})
-        reactorTemperatureChart.data.datasets[0].data[reactorTemperatureChart.data.datasets[0].data.length] 
-          = {x: currentDateTime, y: response[0][8]};
+        powerGauge.update({value: response[0][27]});
+        reactorPowerGauge.update({value: response[0][0]})
+        tavg = (response[0][9]+response[0][10])/2
+        reactorTemperatureChart.data.datasets[0].data
+        [reactorTemperatureChart.data.datasets[0].data.length] 
+          = {x: currentDateTime, y: tavg};
         H1TChart.data.datasets[0].data[H1TChart.data.datasets[0].data.length] 
-          = {x: currentDateTime, y: response[0][21]};
+          = {x: currentDateTime, y: response[0][10]};
         $('#reactorTemp').text('Current reactor temperature: ' + response[0][8]);
         $('#H1T').text('Current H1 temperature: ' + response[0][21]);
       };

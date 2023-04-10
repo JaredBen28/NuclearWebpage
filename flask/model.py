@@ -1,17 +1,23 @@
 # Libary Importations
 import numpy as np
+import matplotlib.pyplot as plt 
+import csv
+import time
 import simpy
 import math
-import time
 
 sampleRate = 0
 
 def step(magnitude, time, delay, initial):
+    
     if time > delay:
         x = magnitude
     else:
-        x = initial  
+        x = initial
+        
     return x
+
+# Imperial Units 
 
 # Point Kinematic Equations 
 beta = 0.0067
@@ -154,7 +160,6 @@ Cst = 10
 kc = 5
 
 
-
 def xprime(env, interval):
     while True:
         global xCurrent
@@ -167,6 +172,7 @@ def xprime(env, interval):
        
         c3 = open('feedwaterPump.txt', "r")
         feedwaterPump = float(c3.read())
+        
                 
         #assigning their states to a columns in the matrix 
         t = env.now
@@ -326,7 +332,11 @@ def xprime(env, interval):
                     xCurrent[27]/1e6, 
                     xCurrent[28] + interval * xPrime[28],
                     xCurrent[29] + interval * xPrime[29]
+                        
+                                                                                  
                 ]
+        
+       
         xCurrent = xMid
 
         global sampleRate
