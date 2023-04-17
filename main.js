@@ -5,7 +5,10 @@ var reactorDeltaTChart;
 var H1TDeltaTChart;
 var tempsChart;
 var reactorPowerGauge;
+var activeSim;
+var lastTimestamp = 0;
 
+// Variables for graph ranges and limit lines
 const powerOutputMax = 60;
 const powerOutputUpperLimit = 50;
 const powerOutLowerLimit = 10;
@@ -23,13 +26,11 @@ const H1TDeltaTMin = 200;
 
 const skipped = (ctx, value) => ctx.p0.skip || ctx.p1.skip ? value : undefined;
 
-var activeSim;
-var lastTimestamp = 0;
-
-// When on VM seach for 5000, change all ip to correct ip
+// When on VM search for 5000, change all ip to correct ip
 
 // Website Init
 $(function() {
+  //create graphs
   createReactorPowerOutputGauge();
   createPowerOutputGauge();
 
@@ -37,18 +38,21 @@ $(function() {
   createReactorDeltaTChart();
   createH1TChart();
 
+  // precheck for sim
   storeActiveSim();
   
-  updateAllFigures(reactorDeltaTChart, H1TDeltaTChart);
+  //update to initialize
+  updateAllFigures(reactorDeltaTChart, H1TDeltaTChart, tempsChart);
 });
 
-
+// clocks for updating the display
 $(document).ready(function(){
   clockInterval = setInterval("updateAllFigures(reactorDeltaTChart, H1TDeltaTChart)", 1000);
   chartInterval = setInterval("updateCharts(reactorDeltaTChart, H1TDeltaTChart, tempsChart)", 2000);
   simInterval = setInterval("simulation()", 2000)
 });
 
+// checks for simulation 
 function simulation() {
   if (activeSim) {
     $('#activeSim').text('Simulation is Active');
@@ -114,6 +118,7 @@ function createPowerOutputGauge() {
   powerGauge.draw();
 }
 
+// get the steam demand value
 function getControlValue() {
   $.ajax({
     type: "GET",
@@ -126,11 +131,11 @@ function getControlValue() {
   });
 }
 
-//Charts
 function getDateTime() {
   return "2000-01-01T"+String(new Date()).split(" ")[4]
 }
 
+// stores the simulation state for the first time
 function storeActiveSim(){
   $.ajax({
     type: "GET",
@@ -142,6 +147,7 @@ function storeActiveSim(){
     }
   });
 }
+
 
 function updateAllFigures(reactorTemperatureChart, H1TChart){
   $.ajax({
@@ -179,7 +185,6 @@ function updateAllFigures(reactorTemperatureChart, H1TChart){
 
       } else {
         activeSim = true;
-        // powerGauge.value = response[0][0];
         powerGauge.update({value: response[0][27]});
         reactorPowerGauge.update({value: response[0][0]})
         
