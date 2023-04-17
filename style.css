@@ -49,3 +49,8 @@ button {
 canvas#viewport { 
   border: 1px solid white; width: 900px; 
 }
+
+.readme {
+  text-align: left;
+  font-size: larger;
+}

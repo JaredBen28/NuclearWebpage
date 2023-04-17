@@ -1,8 +1,8 @@
 # Libary Importations
 import numpy as np
-import time
 import simpy
 import math
+import time
 
 sampleRate = 0
 
@@ -15,8 +15,11 @@ def step(magnitude, time, delay, initial):
         
     return x
 
-# Core parameter Models
+F = 3.2e-11
+reactorVolume = 1079
 
+
+# Core parameter Models
 fuel_mass = 53850.5
 mass_core = 6898.3 
 Afc = 14120.6
@@ -29,37 +32,23 @@ mc1 = 3449.1
 mc2 = 3449.1
 Tf = 962.672
 Tfo = 962.741
-Ufc = 0.0909
+Ufc = 0.0556
 Wc = 8333.3
 
 # Uranium-235
-beta = 0.0067
-beta1 = 2.21e-4
-beta2 = 1.1467e-3
-beta3 = 1.001313e-03
-beta4 = 2.647e-03
-beta5 = 7.71e-4
-beta6 = 2.814e-4
+beta = 0.0067; beta1 = 2.21e-4; beta2 = 1.1467e-3; beta3 = 1.001313e-03; beta4 = 2.647e-03; beta5 = 7.71e-4; beta6 = 2.814e-4
 
 # Decay Constant, lami (s^-1)
-lam1 = 0.0124
-lam2 = 0.0305
-lam3 = 0.111
-lam4 = 0.301
-lam5 = 1.14
-lam6 = 3.01
+lam1 = 0.0124; lam2 = 0.0305; lam3 = 0.111; lam4 = 0.301; lam5 = 1.14; lam6 = 3.01
 
 MPT = 1.79e-4 # seconds mean prompt time
 
 # Nominal Temps (Farenheit)
-theta1o = 586.3
-theta2o = 608.0
-Tfuelo = 608.0
-Tavgo = 547 
+theta1o = 586.3; theta2o = 608.0; Tfuelo = 608.0; Tavgo = 547 
 
 # Nominal Power 
-Po = 502343 #BTU/s
-no = 3450
+Po = 331735 #BTU/s
+no = 4.3e15
 ratedPower = 61   # rated electric power at full load
 
 # reactivity coeffs
@@ -67,9 +56,8 @@ ac = -0.0002
 af = -0.165e-5
 
 # Controller Parameters
-K = 1
-Kp = 0.1
-Ki = 0.01
+Kp = 6.7e-5
+Ki = 6.7e-6
 
 # Coeffiecents of the OTSG 
 Kb = -0.000053
@@ -80,7 +68,7 @@ Ksc = -0.000053
 As = 13.18
 Awsc = 2247.22
 
-# heat capacities
+# Specific Heat Capacities
 cpfw = 1.122
 cpp = 1.37661
 cpsc = 1.128
@@ -158,6 +146,12 @@ Mw1 = 225519.860
 Mw3 = 1165094.750
 Mw5 = 246229.460
 
+
+def rho_ext(position):
+    rho_ext = 1.0e-5*position + 1.5e-5*(position)
+    return rho_ext
+
+
 def reactor_core(env, interval):
     
     while True:
@@ -175,12 +169,17 @@ def reactor_core(env, interval):
 
         c4 = open("TavgController.txt","r")
         Tavgo = float(c4.read())
+
+        c5 = open("ControlRod.txt","r")
+        ControlRodPosition = float(c5.read())
         
+        # add another reactivity 
+
         #assigning their states to a columns in the matrix 
        
         t = env.now
     
-        n = xCurrent[0]                 # A in Excel, thermal Power
+        n = xCurrent[0]                 # A in Excel, neutron density
         C1 = xCurrent[1]                # B in Excel, neutron group 1
         C2 = xCurrent[2]                # C in Excel, neutron group 2
         C3 = xCurrent[3]                # D in Excel, neutron group 3
@@ -212,36 +211,46 @@ def reactor_core(env, interval):
         percentPower = xCurrent[27]    # AB in Excel, percentage fo power in the system before rated power
         Psat = xCurrent[28]            # AC in Excel, saturation Pressure (in this model it is assumed to be constant)
         Tsc = xCurrent[29]             # AD in Excel,  Subcooled Temperature in Farenheit
+        P = xCurrent[30]               # AE in Excel, Reactor Power Thermal
 
         thetaAvg = (theta1 + theta2)/2  # Average temperature in the coolant nodes
                             
-        
-        
+               
         # Coolant Flow
         Wc = coolantPump
 
         # Steam Flow
         Ws = steamDemand
 
+              
+        rho_c = Kp*(Tavgo - thetaAvg) + Ki*(k)
+        rhoExt = rho_ext(ControlRodPosition)
+        rho = af*Tfuel + ac*0.5*theta1 + ac*0.5*theta2 - rho_c - rhoExt
 
-        # rho_c = Kp*(Tavgo - thetaAvg) + Ki*(k)
-        rho = af*(Tfuel - Tfuelo) + 0.5*ac*(theta1 - theta1o) + 0.5*ac*(theta2 - theta2o) + Kp*(Tavgo - thetaAvg) + Ki*(k)
-
-        dndt =  (rho/MPT) - (beta/MPT)*n + C1*lam1 + C2*lam2 + C3*lam3 + C4*lam4 + C5*lam5 + C6*lam6
+        dndt =  no + ((rho-beta)/MPT)*n + C1*lam1 + C2*lam2 + C3*lam3 + C4*lam4 + C5*lam5 + C6*lam6
         dc1dt = (beta1/MPT)*(n) - lam1*C1
         dc2dt = (beta2/MPT)*(n) - lam2*C2
         dc3dt = (beta3/MPT)*(n) - lam3*C3
         dc4dt = (beta4/MPT)*(n) - lam4*C4
         dc5dt = (beta5/MPT)*(n) - lam5*C5
         dc6dt = (beta6/MPT)*(n) - lam6*C6
-        dkdt = Tavgo - thetaAvg
-        dTfuel = (fp*Po*n + (Ufc*Afc)*(Tfuel - thetaAvg))/(fuel_mass*cpf)
-        dtheta1 = (Wc*cpc*(Tp6 - theta1) + ((Ufc*Afc)/2)*(Tfuel - theta1) + (1-fp)*Po*n)/(mass_core*cpc)
-        dtheta2 = (Wc*cpc*(theta1 - theta2) + ((Ufc*Afc)/2)*(Tfuel - theta1) + (1-fp)*Po*n)/(mass_core*cpc)
 
-        #Ts1 = 605.992
-        #Ts2 = 594.981
-        #Tsc = 524.892
+        C11 = F*reactorVolume*C1
+        C22 = F*reactorVolume*C2
+        C33 = F*reactorVolume*C3
+        C44 = F*reactorVolume*C4
+        C55 = F*reactorVolume*C5
+        C66 = F*reactorVolume*C6
+        
+        dPdt =  ((rho-beta)/MPT)*P + C11*lam1 + C22*lam2 + C33*lam3 + C44*lam4 + C55*lam5 + C66*lam6
+
+
+        dkdt = Tavgo - thetaAvg
+        dTfuel =  (fp*P - (Ufc*Afc)*(Tfuel - thetaAvg))/(fuel_mass*cpf)
+        dtheta1 = (Wc*cpc*(Tp6 - theta1)    + ((Ufc*Afc)/2)*(Tfuel - theta1) + (1-fp)*P)/(mc1*cpc)
+        dtheta2 = (Wc*cpc*(theta1 - theta2) + ((Ufc*Afc)/2)*(Tfuel - theta1) + (1-fp)*P)/(mc2*cpc)
+
+      
         Tsat = 559.079
 
         #Turbine 
@@ -249,11 +258,15 @@ def reactor_core(env, interval):
         PowerBTU = (speed*Torque)/778.16    # BTUs
         Power = PowerBTU*(0.001055056)     # MegaWatts
         dTq = (-1/10)*Torque + (1/10)*Ws*(2748)
+
+
+        # Power
         changePower = Power - Powerp
         percentPower = (Power/ratedPower)*100
         decimalPower = Power/ratedPower
 
 
+        # Change in Length
         dLsc = 0.1179
         dLb = 0.0033
         dLs = -0.0034
@@ -265,14 +278,14 @@ def reactor_core(env, interval):
         Wdb = Wsc + 0.5*dLsc*As*psc
         Wb = Wdb + dLsc*As*pb
 
+
+        # Subcooled Region
         Lsc = 0.1179*(decimalPower) + 2.5617
 
         # Boiling Region
-        
         Lb = 0.0033*(decimalPower)**2 + 0.2768*(decimalPower) + 8.517
 
         # Superheated Region 
-        
         Ls = -0.0034*(decimalPower)**2 - 0.4057*(decimalPower) + 89.128
 
         # Subcooled Pressure 
@@ -283,7 +296,7 @@ def reactor_core(env, interval):
 
 
         # Feedwater Temperature
-        # dPsat = (hwsc*Awsc*(Tw5 - Tsat1) + 2*cpsc*(Wsc*Tsc1 - Wdb*Tsat1) - As*psc*cpsc*(Tsat1*dLsc))/(As*psc*cpsc*K1*Lsc)
+        #dPsat = (hwsc*Awsc*(Tw5 - Tsat) + 2*cpsc*(Wsc*Tsc - Wdb*Tsat) - As*psc*cpsc*(Tsat*dLsc))/(As*psc*cpsc*K1*Lsc)
         dPsat = 0.00
   
         # Primary Side
@@ -308,7 +321,7 @@ def reactor_core(env, interval):
         dTsc = (hwsc*(math.pi)*Dot*0.5*Lsc*(Tw6-Tfw) + cpsc*(Wfw*Tfw - Wsc*Tsc) + (1/778)*0.5*As*Lsc*dPsc - 0.5*Tfw*dLsc*As*psc*cpsc)/((0.5*Lsc*As*psc*cpsc))
 
 
-        xPrime = [dndt, dc1dt, dc2dt, dc3dt, dc4dt, dc5dt, dc6dt, dkdt, dTfuel, dtheta1, dtheta2, dTp1, dTp2, dTp3, dTp4, dTp5, dTp6,dTw1, dTw2, dTw3, dTw4, dTw5, dTw6, dTs1, dTs2, dTq, Power, percentPower,dPsat, dTsc]
+        xPrime = [dndt, dc1dt, dc2dt, dc3dt, dc4dt, dc5dt, dc6dt, dkdt, dTfuel, dtheta1, dtheta2, dTp1, dTp2, dTp3, dTp4, dTp5, dTp6,dTw1, dTw2, dTw3, dTw4, dTw5, dTw6, dTs1, dTs2, dTq, Power, percentPower,dPsat, dTsc,dPdt]
        
         xMid = [    xCurrent[0] + interval * xPrime[0],
                     xCurrent[1] + interval * xPrime[1],
@@ -340,11 +353,12 @@ def reactor_core(env, interval):
                     xPrime[27],
                     xCurrent[28] + interval * xPrime[28],
                     xCurrent[29] + interval * xPrime[29],
+                    xCurrent[30] + interval * xPrime[30],
                 ]
                    
             
         xCurrent = xMid    
-        #print(xMid)
+        # print(xMid)
 
         global sampleRate
         if sampleRate <= 200:
@@ -359,8 +373,7 @@ def reactor_core(env, interval):
         
 
 if __name__ == '__main__':
-    # os.remove('sample.csv')
-    xCurrent = [1.0135, 180.631, 487.475, 119.885, 89.127, 6.865,0.946154,0,973.061,567,608,610.331,609.129,585.995,573.554,571.845,566.3,609.06,604.985,570.556,565.251,566.446,548.789,605.992,594.981,0,0,0,1136.58,550] 
+    xCurrent = [no, beta1/(lam1*MPT), beta2/(lam2*MPT), beta3/(lam3*MPT), beta4/(lam4*MPT), beta5/(lam5*MPT), beta6/(lam6*MPT),0,973.061,567,608,610.331,609.129,585.995,573.554,571.845,566.3,609.06,604.985,570.556,565.251,566.446,548.789,605.992,594.981,0,0,0,1136.58,550,Po] 
     env = simpy.rt.RealtimeEnvironment(strict=False)
     proc = env.process(reactor_core(env,0.001))
     

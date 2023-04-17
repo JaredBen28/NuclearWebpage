@@ -3,10 +3,10 @@ var lastTimestamp = 0;
 var dialHeight = window.innerHeight / 3;
 var clockState = false;
 // Variables for graph ranges and limit lines
-const powerOutputMax = 66;
-const powerOutputUpperLimit = 60;
+const powerOutputMax = 68;
+const powerOutputUpperLimit = 61;
 const powerOutLowerLimit = 0;
-const powerOutputMin = -6;
+const powerOutputMin = 0;
 
 const reactorDeltaTMax = 1200;
 const reactorDeltaTUpperLimit = 1190;
@@ -19,7 +19,7 @@ const HotLegTDeltaTLowerLimit = 210;
 const HotLegTDeltaTMin = 200;
 
 const AllTempMax = 650;
-const AllTempMin = 500;
+const AllTempMin = 200;
 
 const skipped = (ctx, value) => ctx.p0.skip || ctx.p1.skip ? value : undefined;
 
@@ -142,7 +142,7 @@ function storeActiveSim(){
     url: ip,
     dataType: "json",
     success: function(response){
-      timestamp = response[0][30];
+      timestamp = response[0][31];
       console.log(timestamp);
     }
   });
@@ -158,7 +158,7 @@ function updateAllFigures(reactorTemperatureChart, HotLegTChart){
       console.log(response)
       if (response.length == 0) {return}
       currentDateTime = getDateTime()
-      timestamp =response[0][30]
+      timestamp = response[0][31]
       if (timestamp == lastTimestamp) {
         activeSim = false;
         powerGauge.update({value: 0});
@@ -185,8 +185,8 @@ function updateAllFigures(reactorTemperatureChart, HotLegTChart){
 
       } else {
         activeSim = true;
-        powerGauge.update({value: response[0][27]});
-        reactorPowerGauge.update({value: response[0][0]})
+        powerGauge.update({value: 61 * response[0][27] / 100});
+        reactorPowerGauge.update({value: response[0][30] * 0.0010550559})
         
         reactorTemperatureChart.data.datasets[0].data
         [reactorTemperatureChart.data.datasets[0].data.length] 
