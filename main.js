@@ -1,32 +1,32 @@
-var clockInterval, chartInterval, simInterval;
-var clockState = false;
-var powerGauge;
-var reactorDeltaTChart;
-var H1TDeltaTChart;
-var tempsChart;
-var reactorPowerGauge;
-var activeSim;
+var clockInterval, chartInterval, simInterval, powerGauge, reactorDeltaTChart, HotLegTDeltaTChart, tempsChart, reactorPowerGauge, activeSim;
 var lastTimestamp = 0;
-
+var dialHeight = window.innerHeight / 3;
+var clockState = false;
 // Variables for graph ranges and limit lines
-const powerOutputMax = 60;
-const powerOutputUpperLimit = 50;
-const powerOutLowerLimit = 10;
-const powerOutputMin = 0;
+const powerOutputMax = 66;
+const powerOutputUpperLimit = 60;
+const powerOutLowerLimit = 0;
+const powerOutputMin = -6;
 
 const reactorDeltaTMax = 1200;
 const reactorDeltaTUpperLimit = 1190;
 const reactorDeltaTLowerLimit = 210;
 const reactorDeltaTMin = 200;
 
-const H1TDeltaTMax = 1200;
-const H1TDeltaTUpperLimit = 1190;
-const H1TDeltaTLowerLimit = 210;
-const H1TDeltaTMin = 200;
+const HotLegTDeltaTMax = 1200;
+const HotLegTDeltaTUpperLimit = 1190;
+const HotLegTDeltaTLowerLimit = 210;
+const HotLegTDeltaTMin = 200;
+
+const AllTempMax = 650;
+const AllTempMin = 500;
 
 const skipped = (ctx, value) => ctx.p0.skip || ctx.p1.skip ? value : undefined;
 
-// When on VM search for 5000, change all ip to correct ip
+// Change to api ip addr
+const ip = "http://127.0.0.1:5000/"
+
+
 
 // Website Init
 $(function() {
@@ -36,19 +36,19 @@ $(function() {
 
   createTempsChart();
   createReactorDeltaTChart();
-  createH1TChart();
+  createHotLegTChart();
 
   // precheck for sim
   storeActiveSim();
   
   //update to initialize
-  updateAllFigures(reactorDeltaTChart, H1TDeltaTChart, tempsChart);
+  updateAllFigures(reactorDeltaTChart, HotLegTDeltaTChart, tempsChart);
 });
 
 // clocks for updating the display
 $(document).ready(function(){
-  clockInterval = setInterval("updateAllFigures(reactorDeltaTChart, H1TDeltaTChart)", 1000);
-  chartInterval = setInterval("updateCharts(reactorDeltaTChart, H1TDeltaTChart, tempsChart)", 2000);
+  clockInterval = setInterval("updateAllFigures(reactorDeltaTChart, HotLegTDeltaTChart)", 1000);
+  chartInterval = setInterval("updateCharts(reactorDeltaTChart, HotLegTDeltaTChart, tempsChart)", 2000);
   simInterval = setInterval("simulation()", 2000)
 });
 
@@ -62,7 +62,7 @@ function simulation() {
     $('#activeSim').text('Simulation is Inactive');
     $('#activeSim').css('color', 'red');
     $('#reactorTemp').text('Current reactor temperature: NaN');
-    $('#H1T').text('Current H1 temperature: NaN');
+    $('#HotLegT').text('Current Hot Leg temperature: NaN');
     // $('#control').css('visibility', 'hidden');
   }
   getControlValue()
@@ -72,11 +72,11 @@ function simulation() {
 function createReactorPowerOutputGauge() {
   reactorPowerGauge = new RadialGauge({
     renderTo: 'reactorPower',
-    title: "Reactor Power Output",
-    height: 400,
+    title: "Thermal Power Output",
+    height: dialHeight,
     minValue: powerOutputMin,
     maxValue: powerOutputMax,
-    units: "MW",
+    units: "MWTH",
     barBeginCircle: false,
     majorTicks: [powerOutputMin, powerOutLowerLimit, powerOutputUpperLimit, powerOutputMax],
     //change tick marks
@@ -97,8 +97,8 @@ function createReactorPowerOutputGauge() {
 function createPowerOutputGauge() {
   powerGauge = new RadialGauge({
     renderTo: 'power',
-    title: "Power Output",
-    height: 400,
+    title: "Turbine Power Output",
+    height: dialHeight ,
     minValue: powerOutputMin,
     maxValue: powerOutputMax,
     units: "MW",
@@ -122,7 +122,7 @@ function createPowerOutputGauge() {
 function getControlValue() {
   $.ajax({
     type: "GET",
-    url: "http://127.0.0.1:5000/control",
+    url: ip + "control",
     dataType: "json",
     success: function(response){
       // console.log(response);
@@ -139,7 +139,7 @@ function getDateTime() {
 function storeActiveSim(){
   $.ajax({
     type: "GET",
-    url: "http://127.0.0.1:5000",
+    url: ip,
     dataType: "json",
     success: function(response){
       timestamp = response[0][30];
@@ -149,10 +149,10 @@ function storeActiveSim(){
 }
 
 
-function updateAllFigures(reactorTemperatureChart, H1TChart){
+function updateAllFigures(reactorTemperatureChart, HotLegTChart){
   $.ajax({
     type: "GET",
-    url: "http://127.0.0.1:5000",
+    url: ip,
     dataType: "json",
     success: function(response){
       console.log(response)
@@ -167,8 +167,8 @@ function updateAllFigures(reactorTemperatureChart, H1TChart){
         [reactorTemperatureChart.data.datasets[0].data.length] 
           = {x: null, y: 0};
 
-        H1TChart.data.datasets[0].data
-        [H1TChart.data.datasets[0].data.length] 
+        HotLegTChart.data.datasets[0].data
+        [HotLegTChart.data.datasets[0].data.length] 
           = {x: null, y: 0};
 
         tempsChart.data.datasets[0].data
@@ -192,12 +192,12 @@ function updateAllFigures(reactorTemperatureChart, H1TChart){
         [reactorTemperatureChart.data.datasets[0].data.length] 
           = {x: currentDateTime, y: (parseFloat(response[0][9])+parseFloat(response[0][10]))/2};
         
-        H1TChart.data.datasets[0].data
-        [H1TChart.data.datasets[0].data.length] 
+        HotLegTChart.data.datasets[0].data
+        [HotLegTChart.data.datasets[0].data.length] 
           = {x: currentDateTime, y: response[0][21]};
         
-        $('#reactorTemp').text('Current reactor temperature: ' + (parseFloat(response[0][9])+parseFloat(response[0][10]))/2);
-        $('#H1T').text('Current H1 temperature: ' + response[0][21]);
+        $('#reactorTemp').text('Current reactor temperature: ' + Math.round((parseFloat(response[0][9]) + parseFloat(response[0][10]))/2 * 1000) / 1000);
+        $('#HotLegT').text('Current HotLeg temperature: ' + Math.round(response[0][21] * 1000) / 1000);
 
         tempsChart.data.datasets[0].data
         [tempsChart.data.datasets[0].data.length]
@@ -205,7 +205,7 @@ function updateAllFigures(reactorTemperatureChart, H1TChart){
 
         tempsChart.data.datasets[1].data
         [tempsChart.data.datasets[1].data.length]
-          = {x: currentDateTime, y: (parseFloat(response[0][9])+parseFloat(response[0][10]))/2};
+          = {x: currentDateTime, y: (parseFloat(response[0][9]) + parseFloat(response[0][10]))/2};
         
           tempsChart.data.datasets[2].data
         [tempsChart.data.datasets[2].data.length]
@@ -309,8 +309,8 @@ function createReactorDeltaTChart() {
   reactorDeltaTChart = new Chart(ctx, config);
 }
 
-function createH1TChart() {
-  const ctx = document.getElementById("H1TChart");
+function createHotLegTChart() {
+  const ctx = document.getElementById("HotLegTChart");
   const horizontalArbitraryLine = {
     id: 'horizontalArbitraryLine',
     beforeDraw(chart, args, options) {
@@ -318,8 +318,8 @@ function createH1TChart() {
       ctx.save();
 
       ctx.strokeStyle = 'Red';
-      const upperLimit = y.getPixelForValue(H1TDeltaTUpperLimit)
-      const lowerLimit = y.getPixelForValue(H1TDeltaTLowerLimit)
+      const upperLimit = y.getPixelForValue(HotLegTDeltaTUpperLimit)
+      const lowerLimit = y.getPixelForValue(HotLegTDeltaTLowerLimit)
 
       ctx.strokeRect(left, upperLimit, width, 0)
       ctx.strokeRect(left, lowerLimit, width, 0)
@@ -369,14 +369,14 @@ function createH1TChart() {
             text: "Temp",
             display: true
           },
-          min: H1TDeltaTMin,
-          max: H1TDeltaTMax
+          min: HotLegTDeltaTMin,
+          max: HotLegTDeltaTMax
         }
       },
       plugins: {
         title: {
           display: true,
-          text: "H1 Temperature Over Time",
+          text: "HotLeg Temperature Over Time",
           padding: {
             top: 10,
             bottom: 10
@@ -393,26 +393,11 @@ function createH1TChart() {
     },
     plugins: [horizontalArbitraryLine]
   };
-  H1TDeltaTChart = new Chart(ctx, config);
+  HotLegTDeltaTChart = new Chart(ctx, config);
 }
 
 function createTempsChart() {
   const ctx = document.getElementById("tempsChart");
-  const horizontalArbitraryLine = {
-    id: 'horizontalArbitraryLine',
-    beforeDraw(chart, args, options) {
-      const { ctx, chartArea: {top, right, bottom, left, width, height}, scales: {x, y} } = chart;
-      ctx.save();
-
-      ctx.strokeStyle = 'Red';
-      const upperLimit = y.getPixelForValue(H1TDeltaTUpperLimit)
-      const lowerLimit = y.getPixelForValue(H1TDeltaTLowerLimit)
-
-      ctx.strokeRect(left, upperLimit, width, 0)
-      ctx.strokeRect(left, lowerLimit, width, 0)
-
-    }
-  }
 
   const config = {
     type: 'line',
@@ -479,8 +464,8 @@ function createTempsChart() {
             text: "Temp",
             display: true
           },
-          min: H1TDeltaTMin,
-          max: H1TDeltaTMax
+          min: AllTempMin,
+          max: AllTempMax
         }
       },
       plugins: {
@@ -501,7 +486,6 @@ function createTempsChart() {
         // }
       }
     },
-    plugins: [horizontalArbitraryLine]
   };
   tempsChart = new Chart(ctx, config);
 }

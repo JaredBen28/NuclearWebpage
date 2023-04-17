@@ -33,6 +33,7 @@
     <div class="topnav container-fluid">
       <a class="active" href="./index.html">Statistics</a>
       <a href="./graphical.html">Graphical</a>
+      <a href="./readme.html">Read Me</a>
     </div>
 
     <div class="container-fluid text-center">    
@@ -45,24 +46,24 @@
             <p id="control" style="font-size: 1.5em;">Power Control Value is at:</p>
           </div>
           <div class="row">
-            <canvas id="power"></canvas>
+            <canvas id="power" style="margin-bottom: 5vh;"></canvas>
           </div>
           <div class="row">
-            <canvas id="reactorPower"></canvas>
+            <canvas id="reactorPower" style="margin-bottom: 1vh;"></canvas>
           </div>
         </div>
 
         <div class="col-lg-9">
           <div class="row">
-            <p id="reactorTemp" style="font-size: 1.5em; margin-bottom: .15em;">Current reactor temperature: C</p>
+            <p id="reactorTemp" style="font-size: 1.5em; margin-bottom: 1vh;">Current reactor temperature: C</p>
           </div>
           <div class="row chart">
             <canvas id="reactorTemperatureChart"></canvas>
           </div>
           <br>
-          <p id="H1T" style="font-size: 1.5em; margin-bottom: .15em;">Current H1 temperature: C</p>
+          <p id="HotLegT" style="font-size: 1.5em; margin-bottom: 1vh;">Current Hot Leg temperature: C</p>
           <div class="row chart">
-            <canvas id="H1TChart"></canvas>
+            <canvas id="HotLegTChart"></canvas>
           </div>
         </div>
       </div>
