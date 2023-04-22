@@ -13,11 +13,12 @@ This is a webpage for PCAG research under DR. Cole and Dr. Ibrahim
 * Move all the files to the apache folder using `mv ./* /[target directory]`
 * Change all the .txt and .csv files to be under the ownership of ubuntu not root `sudo chmod ubuntu *.txt` and `sudo chmod ubuntu *.csv`
   * This is so the model can be ran as a normal user not root or sudo
-* Next we need to run the model and api for the webpage
+* Before running the simulation
+* Next we need to run the simulation and api for the webpage
 ```
-pip -install -r ./flask/requirements.txt
-python ./flask/api.py
-python ./flask/model.py
+pip -install -r ./python/requirements.txt
+python ./python/api.py
+python ./python/useableSimulation.py
 ```
 * Open the main.js file and change the ip address on line 27 to the  ip of the api
 * Everything should now be up and running
@@ -39,7 +40,6 @@ Next remove all the files that were changed from the webpage directory.
 Then move the changed files to webpage directory. 
 
 Ex: If you changed all the js files use `mv *.js /[target dir]` to move all of them at once. Wildcards are very helpful
-
 
 ---
 

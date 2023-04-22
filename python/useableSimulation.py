@@ -156,21 +156,19 @@ def reactor_core(env, interval):
     
     while True:
         global xCurrent
-
-
-        c1 = open("/home/ubunutu/Desktop/coolantPump.txt", "r")
+        c1 = open("/home/ubuntu/Desktop/coolantPump.txt", "r")
         coolantPump = float(c1.read())
 
-        c2 = open("/home/ubunutu/Desktop/steamDemand.txt", "r")
+        c2 = open("/home/ubuntu/Desktop/steamDemand.txt", "r")
         steamDemand = float(c2.read())
        
-        c3 = open("/home/ubunutu/Desktop/feedwaterPump.txt", "r")
+        c3 = open("/home/ubuntu/Desktop/feedwaterPump.txt", "r")
         feedwaterPump = float(c3.read())
 
-        c4 = open("/home/ubunutu/Desktop/TavgController.txt","r")
+        c4 = open("/home/ubuntu/Desktop/TavgController.txt","r")
         Tavgo = float(c4.read())
 
-        c5 = open("/home/ubunutu/Desktop/ControlRod.txt","r")
+        c5 = open("/home/ubuntu/Desktop/ControlRod.txt","r")
         ControlRodPosition = float(c5.read())
         
         # add another reactivity 

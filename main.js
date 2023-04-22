@@ -190,14 +190,14 @@ function updateAllFigures(reactorTemperatureChart, HotLegTChart){
         
         reactorTemperatureChart.data.datasets[0].data
         [reactorTemperatureChart.data.datasets[0].data.length] 
-          = {x: currentDateTime, y: (parseFloat(response[0][9])+parseFloat(response[0][10]))/2};
+          = {x: currentDateTime, y: (parseFloat(response[0][9])+ parseFloat(response[0][10]))/2};
         
         HotLegTChart.data.datasets[0].data
         [HotLegTChart.data.datasets[0].data.length] 
-          = {x: currentDateTime, y: response[0][21]};
+          = {x: currentDateTime, y: response[0][10]};
         
         $('#reactorTemp').text('Current reactor temperature: ' + Math.round((parseFloat(response[0][9]) + parseFloat(response[0][10]))/2 * 1000) / 1000);
-        $('#HotLegT').text('Current HotLeg temperature: ' + Math.round(response[0][21] * 1000) / 1000);
+        $('#HotLegT').text('Current HotLeg temperature: ' + Math.round(response[0][10] * 1000) / 1000);
 
         tempsChart.data.datasets[0].data
         [tempsChart.data.datasets[0].data.length]
