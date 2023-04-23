@@ -165,10 +165,10 @@ def reactor_core(env, interval):
         c3 = open("/home/ubuntu/Desktop/feedwaterPump.txt", "r")
         feedwaterPump = float(c3.read())
 
-        c4 = open("/home/ubuntu/Desktop/TavgController.txt","r")
+        c4 = open("/home/ubuntu/Desktop/tavgController.txt","r")
         Tavgo = float(c4.read())
 
-        c5 = open("/home/ubuntu/Desktop/ControlRod.txt","r")
+        c5 = open("/home/ubuntu/Desktop/controlRod.txt","r")
         ControlRodPosition = float(c5.read())
         
         # add another reactivity 

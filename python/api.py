@@ -20,7 +20,7 @@ def get():
 @app.route("/control", methods=['GET'])
 @cross_origin()
 def getControlPower():
-     file = open("steamDemand.txt", "r")
+     file = open("/home/ubuntu/Desktop/steamDemand.txt", "r")
      data = file.read()
      file.close()
      return jsonify(data)
