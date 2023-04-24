@@ -15,25 +15,39 @@ def step(magnitude, time, delay, initial):
         
     return x
 
-F = 3.2e-11
-reactorVolume = 1079
 
+# Parameters for Reactor Power
+reactorVolume = 937.77        # ft^3
+F = 3.033e-14                 # BTU
+Sigmaf = 0.01819
+neutronVelocity = 6500
+N = 5e22
 
 # Core parameter Models
 fuel_mass = 53850.5
 mass_core = 6898.3 
-Afc = 14120.6
-Afc1 = 7060.3
-Afc2 = 7060.3
-cpc = 1.376
-cpf = 0.059
+
+# Heat Transfer Areas in the Nuclear Reactor
+Afc = 14120.6       # ft^2
+Afc1 = 7060.3       # ft^2
+Afc2 = 7060.3       # ft^2
+
+# Heat Capacities
+cpc = 1.376         # BTU/lbm-F
+cpf = 0.059         # BTU/lbm-F
+
+# Fraction of Total Power Deposited in Fuel
 fp = 0.97
-mc1 = 3449.1
-mc2 = 3449.1
-Tf = 962.672
-Tfo = 962.741
-Ufc = 0.0556
-Wc = 8333.3
+
+# Coolant Mass in Nodes
+mc1 = 3449.1        # lbm
+mc2 = 3449.1        # lbm
+
+# Overall Heat Transfer Coefficient
+Ufc = 0.090944      # BTU/s-ft^2-F
+
+# Core Flow
+Wc = 8333.3         # lbm/s
 
 # Uranium-235
 beta = 0.0067; beta1 = 2.21e-4; beta2 = 1.1467e-3; beta3 = 1.001313e-03; beta4 = 2.647e-03; beta5 = 7.71e-4; beta6 = 2.814e-4
@@ -41,23 +55,24 @@ beta = 0.0067; beta1 = 2.21e-4; beta2 = 1.1467e-3; beta3 = 1.001313e-03; beta4 =
 # Decay Constant, lami (s^-1)
 lam1 = 0.0124; lam2 = 0.0305; lam3 = 0.111; lam4 = 0.301; lam5 = 1.14; lam6 = 3.01
 
-MPT = 1.79e-4 # seconds mean prompt time
+# Mean Prompt Time
+MPT = 1.79e-4 # seconds 
 
 # Nominal Temps (Farenheit)
-theta1o = 586.3; theta2o = 608.0; Tfuelo = 608.0; Tavgo = 547 
+theta1o = 586.3; theta2o = 608.0; Tfuelo = 973.061; Tavgo = 588.5
 
 # Nominal Power 
-Po = 331735 #BTU/s
-no = 4.3e15
-ratedPower = 61   # rated electric power at full load
+Po = 502343.1      # BTU/s
+no = 5e13
+ratedPower = 61    # rated electric power at full load
 
 # reactivity coeffs
-ac = -0.0002
-af = -0.165e-5
+ac = -0.0002       # 1/F 
+af = -0.165e-5     # 1/F
 
 # Controller Parameters
-Kp = 6.7e-5
-Ki = 6.7e-6
+Kp = -6.7e-5
+Ki = -6.7e-6
 
 # Coeffiecents of the OTSG 
 Kb = -0.000053
@@ -76,52 +91,50 @@ cpw = 0.109
 cps = 0.762
 
 # Diameters
-Dit = 4.642e-02
-Dot = 5.208e-02
-Dis = 3.5
-Dos = 6.84
+Dit = 4.642e-02     # ft
+Dot = 5.208e-02     # ft
+Dis = 3.5           # ft
+Dos = 6.84          # ft
+
+
+# Heat of Vaporization
+hfg = 664.9
 
 # heat transfer
-hfg = 664.9
-hpw = 1.807
-hwb = 2.16647
-hws = 0.6672
-hwsc = 1.18
+hpw = 1.807         # BTU/s-ft^2-F
+hwb = 2.16647       # BTU/s-ft^2-F
+hws = 0.6672        # BTU/s-ft^2-F
+hwsc = 1.18         # BTU/s-ft^2-F
 
 # densities
-pb = 45.14
-pf = 45.138
-pfw = 53.47
-pp = 44.75
-ps = 1.15358
-psc = 50.76
-pw = 526
+pb = 45.14          # boiling fluid density # lbm/ft^3 
+pf = 45.138         # boiling density       # lbm/ft^3 
+pfw = 53.47         # feedwater density     # lbm/ft^3 
+pp = 44.75          # primary fluid density # lbm/ft^3 
+ps = 1.15358        # steam density         # lbm/ft^3 
+psc = 50.76         # subcooled fluid density # lbm/ft^3 
+pw = 526            # inconel 690 density   # lbm/ft^3 
 
 # Lengths
-L = 28
-Lb = 19.9302
-Ls = 3.85776
-Lsc = 4.21202
+L = 28              # active SG tube length # ft
+Lb = 19.9302        # boiling length        # ft
+Ls = 3.85776        # steam length          # ft
+Lsc = 4.21202       # subcooled length      # ft
 
-Mstm = 18
-N = 6446
-R = 10.71316
+Mstm = 18           # Molar weight of Steam # lbm/lbmol
+N = 6446            # Number of Tubes
+R = 10.71316        # Universal Gas Constant # [ft^3-psia/R-lbmol]
 
 # Flow Rates
-Wc = 8333
-Ws = 504.059
-Wfw = 504.059
+Wc = 8333           # lbm/s           
+Ws = 504.059        # lbm/s
+Wfw = 504.059       # lbm/s
 
-Zss = 0.8313
+Zss = 0.8313       # Steam Expansion Coefficient 
 
 # Secondary Side
 Tsat = 599.079
-Tfw = 250
-
-cpw = 2.4
-hws = 12
-hwb = 12
-hwsc = 12
+Tfw = 414
 
 ts = 1
 Wso = 504.058
@@ -146,9 +159,8 @@ Mw1 = 225519.860
 Mw3 = 1165094.750
 Mw5 = 246229.460
 
-
 def rho_ext(position):
-    rho_ext = 1.0e-5*position + 1.5e-5*(position)
+    rho_ext = (-1.0e-5)*position + (-1.5e-5)*(position)
     return rho_ext
 
 
@@ -171,10 +183,8 @@ def reactor_core(env, interval):
         c5 = open("/home/ubuntu/Desktop/controlRod.txt","r")
         ControlRodPosition = float(c5.read())
         
-        # add another reactivity 
-
-        #assigning their states to a columns in the matrix 
        
+        #assigning their states to a columns in the matrix 
         t = env.now
     
         n = xCurrent[0]                 # A in Excel, neutron density
@@ -211,21 +221,19 @@ def reactor_core(env, interval):
         Tsc = xCurrent[29]             # AD in Excel,  Subcooled Temperature in Farenheit
         P = xCurrent[30]               # AE in Excel, Reactor Power Thermal
 
-        thetaAvg = (theta1 + theta2)/2  # Average temperature in the coolant nodes
-                            
-               
+        thetaAvg = (Tp6 + theta2)/2  # Average temperature in the coolant nodes
+                                   
         # Coolant Flow
         Wc = coolantPump
 
         # Steam Flow
         Ws = steamDemand
-
-              
+   
         rho_c = Kp*(Tavgo - thetaAvg) + Ki*(k)
         rhoExt = rho_ext(ControlRodPosition)
-        rho = af*Tfuel + ac*0.5*theta1 + ac*0.5*theta2 - rho_c - rhoExt
+        rho = af*Tfuel + ac*0.5*theta1 + ac*0.5*theta2 + beta*rho_c + rhoExt
 
-        dndt =  no + ((rho-beta)/MPT)*n + C1*lam1 + C2*lam2 + C3*lam3 + C4*lam4 + C5*lam5 + C6*lam6
+        dndt  = ((rho-beta)/MPT)*n + C1*lam1 + C2*lam2 + C3*lam3 + C4*lam4 + C5*lam5 + C6*lam6
         dc1dt = (beta1/MPT)*(n) - lam1*C1
         dc2dt = (beta2/MPT)*(n) - lam2*C2
         dc3dt = (beta3/MPT)*(n) - lam3*C3
@@ -240,16 +248,12 @@ def reactor_core(env, interval):
         C55 = F*reactorVolume*C5
         C66 = F*reactorVolume*C6
         
-        dPdt =  ((rho-beta)/MPT)*P + C11*lam1 + C22*lam2 + C33*lam3 + C44*lam4 + C55*lam5 + C66*lam6
-
-
+        #dPdt =  ((rho-beta)/MPT)*P + C11*lam1 + C22*lam2 + C33*lam3 + C44*lam4 + C55*lam5 + C66*lam6
+        dPdt =  reactorVolume*Sigmaf*neutronVelocity*F*n
         dkdt = Tavgo - thetaAvg
-        dTfuel =  (fp*P - (Ufc*Afc)*(Tfuel - thetaAvg))/(fuel_mass*cpf)
-        dtheta1 = (Wc*cpc*(Tp6 - theta1)    + ((Ufc*Afc)/2)*(Tfuel - theta1) + (1-fp)*P)/(mc1*cpc)
-        dtheta2 = (Wc*cpc*(theta1 - theta2) + ((Ufc*Afc)/2)*(Tfuel - theta1) + (1-fp)*P)/(mc2*cpc)
-
-      
-        Tsat = 559.079
+        dTfuel =  (fp*P + (Ufc*Afc)*(theta1 - Tfuel))/(fuel_mass*cpf)
+        dtheta1 = (0.5*(1-fp)*P + (Ufc*Afc1)*(Tfuel - theta1) + Wc*cpc*(Tp6 - theta1))/(mc1*cpc)
+        dtheta2 = (0.5*(1-fp)*P + (Ufc*Afc2)*(Tfuel - theta1) + Wc*cpc*(theta1 - theta2))/(mc2*cpc)
 
         #Turbine 
         speed = 30 #rev per second
@@ -257,12 +261,10 @@ def reactor_core(env, interval):
         Power = PowerBTU*(0.001055056)     # MegaWatts
         dTq = (-1/10)*Torque + (1/10)*Ws*(2748)
 
-
         # Power
         changePower = Power - Powerp
         percentPower = (Power/ratedPower)*100
         decimalPower = Power/ratedPower
-
 
         # Change in Length
         dLsc = 0.1179
@@ -272,10 +274,19 @@ def reactor_core(env, interval):
         # Feedwater Flow from BOP
         Wfw = feedwaterPump
 
-        Wsc = Wfw + 0.5*dLsc*As*psc
-        Wdb = Wsc + 0.5*dLsc*As*psc
-        Wb = Wdb + dLsc*As*pb
-
+        if Wfw > Ws:
+            Wsc = Wfw + 0.5*dLsc*As*psc
+            Wdb = Wsc + 0.5*dLsc*As*psc
+            Wb = Wdb + dLsc*As*pb
+            W12 = Wb + 0.5*dLs*As*ps
+            Ws = W12 + 0.5*dLs*As*ps
+        else:  
+            W12 = Ws - 0.5*dLs*As*ps
+            Wb = W12 - 0.5*dLs*As*ps
+            Wdb = Wb - dLsc*As*pb
+            Wsc = Wdb - 0.5*dLsc*As*psc
+            Wfw = Wsc - 0.5*dLsc*As*psc
+       
 
         # Subcooled Region
         Lsc = 0.1179*(decimalPower) + 2.5617
@@ -291,7 +302,6 @@ def reactor_core(env, interval):
 
         # Steam Pressure 
         dPS = (Zss*(Wb - Ws)*R*((Ts1+458.67+Ts2+458.67)/(2*Mstm)))/(As*Ls)
-
 
         # Feedwater Temperature
         #dPsat = (hwsc*Awsc*(Tw5 - Tsat) + 2*cpsc*(Wsc*Tsc - Wdb*Tsat) - As*psc*cpsc*(Tsat*dLsc))/(As*psc*cpsc*K1*Lsc)
@@ -317,7 +327,6 @@ def reactor_core(env, interval):
         dTs2 = (hws*Aws1*(Tw2 - Ts2) - (Ws*cps*(Ts2 - Tsat)))/(As*0.5*Ls*ps*cps)
 
         dTsc = (hwsc*(math.pi)*Dot*0.5*Lsc*(Tw6-Tfw) + cpsc*(Wfw*Tfw - Wsc*Tsc) + (1/778)*0.5*As*Lsc*dPsc - 0.5*Tfw*dLsc*As*psc*cpsc)/((0.5*Lsc*As*psc*cpsc))
-
 
         xPrime = [dndt, dc1dt, dc2dt, dc3dt, dc4dt, dc5dt, dc6dt, dkdt, dTfuel, dtheta1, dtheta2, dTp1, dTp2, dTp3, dTp4, dTp5, dTp6,dTw1, dTw2, dTw3, dTw4, dTw5, dTw6, dTs1, dTs2, dTq, Power, percentPower,dPsat, dTsc,dPdt]
        
@@ -351,7 +360,7 @@ def reactor_core(env, interval):
                     xPrime[27],
                     xCurrent[28] + interval * xPrime[28],
                     xCurrent[29] + interval * xPrime[29],
-                    xCurrent[30] + interval * xPrime[30],
+                    xPrime[30],
                 ]
                    
             
@@ -365,7 +374,7 @@ def reactor_core(env, interval):
             sampleRate = 0            
             sample = np.array(xCurrent)
             sample = np.append(sample, int(time.time_ns()))
-            sample.tofile('sample.csv', sep=",")
+            sample.tofile('/var/www/html/sample.csv', sep=",")
 
         yield env.timeout(interval) 
         

@@ -28,7 +28,6 @@ Reactor Thermal Power: The rate at which heat is produced in the reactor core du
 
 
 Values
-
 coolantPump
     range: 0 - 8333.3
 TavgController
