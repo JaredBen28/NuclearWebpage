@@ -1,0 +1,43 @@
+Nuclear Reactor:  Produces heat due to nuclear fission. The process heats the nuclear fuel, heating the coolant (water). The heated 
+water enters the steam generator. 
+
+Coolant Pump: Circulates water into the nuclear reactor. 
+
+Feedwater Pump: Brings water into the steam generator. 
+
+Steam Demand: A valve actuated by an operator. The position of the valve is directly proportional to the amount of power produced by the 
+steam turbine. 
+
+Steam Turbine: Steam produced in the steam generator turns the turbine, producing electricity. 
+
+Once Through Steam Generator: The Once Through Steam Generator is a heat exchanger. It uses heat from the reactor to transform 
+water into steam.
+
+Control Rods: Used to control the rate of fission of nuclear fuel. 
+
+Hot Leg Temperature: The nuclear fuel heats the coolant (water) entering the nuclear reactor. The heated water enters the primary side of the once-through steam generator.
+
+Cold Leg Temperature: Coolant from the primary side of the once-through steam generator (OTSG).
+
+Average Coolant Temperature (Tavg): It is implemented in a feedback control loop to control the reactivity in the nuclear reactor. The average coolant temperature is the average of the cold and hot leg temperatures. 
+The error between the reference value and the average coolant temperature is used in the proportional-integral (PI) controller to change reactivity in the nuclear reactor. 
+
+Turbine power: Steam from the OTSG turns the turbine shaft attached to a generator, producing electricity. 
+
+Reactor Thermal Power: The rate at which heat is produced in the reactor core due to fissions in the fuel. The reactor's thermal power is always less than the electrical power due to conversion losses (thermal to mechanical energy to electrical power).
+
+
+Values
+
+coolantPump
+    range: 0 - 8333.3
+TavgController
+    range: 0 - 587.5
+steamDemand
+    range: 0 - 504.059
+feedwaterPump
+    range: 0 - 504.059
+Control Rod
+    range: 0 - 1
+
+
