@@ -11,12 +11,6 @@ import numpy as np
 import simpy
 import math
 
-# Parameters for Reactor Power
-reactorVolume = 937.77        # ft^3
-F = 3.033e-14                 # BTU
-Sigmaf = 0.01819
-neutronVelocity = 6500
-N = 5e22
 
 # Core parameter Models
 fuel_mass = 53850.5
@@ -58,7 +52,7 @@ theta1o = 586.3; theta2o = 608.0; Tfuelo = 973.061; Tavgo = 588.5
 
 # Nominal Power 
 Po = 502343.1      # BTU/s
-no = 5e13
+no = 1
 ratedPower = 61    # rated electric power at full load
 
 # reactivity coeffs
@@ -90,7 +84,6 @@ Dit = 4.642e-02     # ft
 Dot = 5.208e-02     # ft
 Dis = 3.5           # ft
 Dos = 6.84          # ft
-
 
 # Heat of Vaporization
 hfg = 664.9
@@ -235,20 +228,12 @@ def reactor_core(env, interval):
         dc4dt = (beta4/MPT)*(n) - lam4*C4
         dc5dt = (beta5/MPT)*(n) - lam5*C5
         dc6dt = (beta6/MPT)*(n) - lam6*C6
-
-        C11 = F*reactorVolume*C1
-        C22 = F*reactorVolume*C2
-        C33 = F*reactorVolume*C3
-        C44 = F*reactorVolume*C4
-        C55 = F*reactorVolume*C5
-        C66 = F*reactorVolume*C6
         
-        #dPdt =  ((rho-beta)/MPT)*P + C11*lam1 + C22*lam2 + C33*lam3 + C44*lam4 + C55*lam5 + C66*lam6
-        dPdt =  reactorVolume*Sigmaf*neutronVelocity*F*n
+        dPdt =  n*100
         dkdt = Tavgo - thetaAvg
-        dTfuel =  (fp*P + (Ufc*Afc)*(theta1 - Tfuel))/(fuel_mass*cpf)
-        dtheta1 = (0.5*(1-fp)*P + (Ufc*Afc1)*(Tfuel - theta1) + Wc*cpc*(Tp6 - theta1))/(mc1*cpc)
-        dtheta2 = (0.5*(1-fp)*P + (Ufc*Afc2)*(Tfuel - theta1) + Wc*cpc*(theta1 - theta2))/(mc2*cpc)
+        dTfuel =  (fp*Po*n + (Ufc*Afc)*(theta1 - Tfuel))/(fuel_mass*cpf)
+        dtheta1 = (0.5*(1-fp)*Po*n + (Ufc*Afc1)*(Tfuel - theta1) + Wc*cpc*(Tp6 - theta1))/(mc1*cpc)
+        dtheta2 = (0.5*(1-fp)*Po*n + (Ufc*Afc2)*(Tfuel - theta1) + Wc*cpc*(theta1 - theta2))/(mc2*cpc)
 
         #Turbine 
         speed = 30 #rev per second
@@ -372,7 +357,8 @@ def reactor_core(env, interval):
 
 if __name__ == '__main__':
     
-    xCurrent = [no, beta1/(lam1*MPT), beta2/(lam2*MPT), beta3/(lam3*MPT), beta4/(lam4*MPT), beta5/(lam5*MPT), beta6/(lam6*MPT),0,973.061,567,608,610.331,609.129,585.995,573.554,571.845,566.3,609.06,604.985,570.556,565.251,566.446,548.789,605.992,594.981,0,0,0,1136.58,550,Po] 
+    xCurrent = [0, beta1/(lam1*MPT), beta2/(lam2*MPT), beta3/(lam3*MPT), beta4/(lam4*MPT), beta5/(lam5*MPT), beta6/(lam6*MPT),0,973.061,567,608,610.331,609.129,585.995,573.554,571.845,566.3,609.06,604.985,570.556,565.251,566.446,548.789,605.992,594.981,0,0,0,1136.58,550,Po] 
+
     env = simpy.rt.RealtimeEnvironment(strict=False)
     proc = env.process(reactor_core(env,0.001))
     
